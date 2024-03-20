@@ -1,0 +1,27 @@
+version: '3.3'
+services:
+  mysql:
+    image: mysql:8.3
+    restart: always
+    env_file:
+      - ./.env
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3306:3306"
+
+  app:
+    build: .
+    env_file:
+      - ./.env
+    environment:
+      - DB_NAME=${MYSQL_DATABASE}
+      - DB_USER=root
+      - DB_PASS=${MYSQL_ROOT_PASSWORD}
+      - DB_SERVICE=mysql
+      - DB_PORT=3306
+    depends_on:
+      - mysql
+    ports:
+      - '8080:8080'

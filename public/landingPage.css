@@ -1,0 +1,102 @@
+body, html {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+.bg {
+  /* The image used */
+  background-image: url('./images/landingpageBackground.png');
+
+  /* Full height */
+  height: 100%;
+
+  /* Center and scale the image nicely */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.overlay {
+  /* Full height */
+  height: 100%;
+  
+  /* Create the overlay effect */
+  background-color: rgba(0, 0, 50, 0.5); /* Black background with opacity */
+  color: white;
+  font-weight: bold;
+
+  /* Center the content */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+button {
+  border: 2px solid #ffffffdd; /* White border with some transparency */
+  padding: 10px 20px;
+  background-color: transparent; /* Transparent background */
+  color: #FFF;
+  text-transform: uppercase;
+  margin: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  opacity: 0; /* Start with buttons invisible */
+  animation: fadeIn 2.5s ease forwards; /* Apply the animation */
+  animation-delay: 2s;
+}
+button-loginForm{
+  border: 2px solid #ffffffdd; /* White border with some transparency */
+  padding: 10px 20px;
+  background-color: transparent; /* Transparent background */
+  color: #FFF;
+  text-transform: uppercase;
+  margin: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  opacity: 0; /* Start with buttons invisible */
+}
+.form-container {
+  display: none; /* Initially hidden */
+  position: fixed; /* Overlay the form on the current content */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 400px; /* Adjust the width as needed */
+  height: auto;
+  padding: 2em;
+  background: linear-gradient(to right, #000000, #091b33); /* Blue and black gradient */
+  color: white; /* Color for the text */
+  border-radius: 20px; /* Rounded corners */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* A subtle shadow for depth */
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+button:hover {
+  background-color: #ffffff55; /* Slightly white background on hover */
+  color: #000;
+}
+
+h1 {
+  font-size: 2em;
+  animation: fadeIn 3s ease forwards; /* Apply the animation */
+
+}
+
+p {
+  font-size: 1.5em;
+  animation: fadeIn 3s ease forwards; /* Apply the animation */
+
+}
