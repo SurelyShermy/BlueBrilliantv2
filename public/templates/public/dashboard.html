@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link href="{% static 'public/css/userDashboard.css' %}" rel="stylesheet" />
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-image: url("../static/public/images/userdashboardbackground.png");
+      background-position: center;
+      background-position-y: -70px;
+      background-position-x: -33px;
+      /* background-position-y: 80%;
+        background-position-x: 30%; */
+      background-size: cover;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+  </style>
+  <title>BlueBrilliant</title>
+</head>
+
+<body>
+
+  <div class="top-bar">
+    <p id="userNameDisplay">You are logged in as: [USER NAME]</p>
+    <button id="logout-btn">Log Out</button>
+  </div>
+  <div id="sliding-text-box-left">
+    <p id="totalPlayed"></p>
+    <br />
+    <p id="totalWins"></p>
+    <br />
+    <p id="winRate"></p>
+    <!-- Add more content inside the text box as required -->
+  </div>
+
+  <div class="bottom-button-container">
+    <button id="randomMoves">Play Random Moves</button>
+    <button id="overBoard">Play Over the Board</button>
+    <button id="pve">Play Against the Engine</button>
+  </div>
+</body>
+
+</html>
