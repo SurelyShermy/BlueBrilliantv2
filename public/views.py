@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import JsonResponse
+from django.http import HttpResponse
 
 from .models import AuthToken
 
@@ -51,7 +52,7 @@ def register(request):
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 # this should fix the stupid bug so not all te html is refresged
                 form_html = render_to_string('public/register_modal.html', {'form': form}, request)
-                return JsonResponse({'form_html': form_html})
+                return HttpResponse({'form_html': form_html})
             else:
                 return render(request, 'public/index.html', {'form': form, 'show_register_modal': True})
     else:
