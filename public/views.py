@@ -49,10 +49,11 @@ def register(request):
             return redirect('index')
         else:
             print(form.errors)
+            print("made it to invalid password")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 # this should fix the stupid bug so not all te html is refresged
-                form_html = render_to_string('public/register_modal.html', {'form': form}, request)
-                return HttpResponse(form_html, content_type='text/html')
+                form_html = render_to_string('public/register_modal.html', {'form': form}, request=request)
+                return JsonResponse({"form_html": form_html})
             else:
                 return render(request, 'public/index.html', {'form': form, 'show_register_modal': True})
     else:

@@ -113,18 +113,20 @@
         method: 'POST',
         body: formData,
         headers: {
-          'X-CSRFToken': getCookie('csrftoken'),
-          'X-Requested-With': 'XMLHttpRequest'
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
         },
         credentials: 'same-origin'
-      })
-      .then(response => response.text())
-      .then(html => {
-        // replace content inside the modal-content div
-        document.querySelector('#registerModal .modal-content').innerHTML = html;
-        document.getElementById('registerModal').style.display = 'block'; // modal stays open
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.querySelector('#registerModal .modal-content').innerHTML = data.form_html;
+            document.getElementById('registerModal').style.display = 'block';
+        })
+        .catch(error => {
+            console.error('problem with fetch:', error);
+        });
       });
-    });
   
     function getCookie(name) { // get value of cookie by name
       let cookieValue = null;
