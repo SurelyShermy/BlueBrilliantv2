@@ -61,7 +61,7 @@
           <span class="close-button">&times;</span>
           <div class="modal-content">
             <h1>Register</h1>
-              <form id="registrationForm" method="POST" action="{% url 'register' %}">
+              <form id="registrationForm" method="POST">
                 {{ form.non_field_errors }}
                 {% for field in form %}
                     <div class="form-group">
@@ -101,3 +101,45 @@
     </div>
   </body>
 </html>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var registerForm = document.getElementById('registrationForm');
+    registerForm.addEventListener('submit', function(event) {
+      event.preventDefault(); 
+      var formData = new FormData(registerForm);
+      
+      fetch("{% url 'register' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+      })
+      .then(response => response.text())
+      .then(html => {
+        // replace content inside the modal-content div
+        document.querySelector('#registerModal .modal-content').innerHTML = html;
+        document.getElementById('registerModal').style.display = 'block'; // modal stays open
+      });
+    });
+  
+    function getCookie(name) { // get value of cookie by name
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  });
+  </script>
+  
