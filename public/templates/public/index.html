@@ -57,7 +57,7 @@
         </div>
 
         <!-- Register -->
-        <div id="registerModal" class="form-container" style="display: none;">
+        <div id="registerModal" class="form-container">
           <span class="close-button">&times;</span>
           <div class="modal-content">
             <h1>Register</h1>
@@ -120,8 +120,8 @@
         })
         .then(response => response.json())
         .then(data => {
-            document.querySelector('#registerModal .modal-content').innerHTML = data.form_html;
-            document.getElementById('registerModal').style.display = 'block';
+          document.querySelector('#registerModal .modal-content').innerHTML = data.form_html;
+          document.getElementById('registerModal').style.display = 'block';
         })
         .catch(error => {
             console.error('problem with fetch:', error);
