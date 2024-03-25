@@ -70,3 +70,7 @@ def index(request):
 @login_required
 def user_dashboard(request):
     return render(request, 'public/dashboard.html')
+
+def custom_logout(request):
+    logout(request)
+    return redirect('public/index.html')
