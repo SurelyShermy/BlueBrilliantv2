@@ -26,8 +26,8 @@
 <body>
 
   <div class="top-bar">
-    <p id="userNameDisplay">You are logged in as: [USER NAME]</p>
-    <button id="logout-btn">Log Out</button>
+    <p id="userNameDisplay">You are logged in as: {{ user.username }}</p>
+    <button id="logout-btn" href="{% url 'logout' %}">Log Out</button>
   </div>
   <div id="sliding-text-box-left">
     <p id="totalPlayed"></p>
@@ -35,7 +35,7 @@
     <p id="totalWins"></p>
     <br />
     <p id="winRate"></p>
-    <!-- Add more content inside the text box as required -->
+    
   </div>
 
   <div class="bottom-button-container">
