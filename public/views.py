@@ -27,6 +27,7 @@ def custom_login(request):
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            print("user logged in")
             login(request, user)
             token = secrets.token_hex(32)
 
@@ -53,6 +54,7 @@ def register(request):
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 # this should fix the stupid bug so not all te html is refresged
                 form_html = render_to_string('public/register_modal.html', {'form': form}, request=request)
+                print(form_html)
                 return JsonResponse({"form_html": form_html})
             else:
                 return render(request, 'public/index.html', {'form': form, 'show_register_modal': True})
