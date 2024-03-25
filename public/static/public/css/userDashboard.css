@@ -1,0 +1,178 @@
+:root {
+  --color-realblue: #1e90ff;
+  --color-grey: rgba(93,93,112,1);
+  --color-black: rgba(0,0,0,1);
+  --color-lightwhite: rgba(255,255,255,1);
+  --color-blue: rgba(0,0,255,1);
+  --color-darkblack: rgba(0, 0, 0, 0.25);
+  --color-white: rgba(255,255,255,1);
+}
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+/* body {
+
+  /* The image used */
+  /* background-image: url('userdashboardbackground.png'); */
+
+  /* Full height */
+  /* height: 100%; */
+
+  /* Center and scale the image nicely */
+  /* background-position-y: 470px;
+  background-position-x: 433px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover; */
+  /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }*/
+
+
+.top-bar {
+  position: fixed; /* Fixed position */
+  top: 10px; /* Align to the top */
+  right: 10px; /* Align to the left */
+  width: 99%; /* Full width */
+  display: flex;
+  justify-content: flex-end; /* Align children to the right */
+  align-items: center;
+  padding: 10px 20px; /* Padding on all sides */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+  z-index: 1001; /* Ensure it's above the sliding text box */
+}
+
+/* Styles for the search bar container */
+.search-container {
+  display: flex; /* Use flexbox for alignment */
+  /* align-items: top; */
+  margin-right: 0px; /* Space between search bar and log out button */
+  align-content: baseline;
+}
+
+#userNameDisplay {
+  font-size: 1em; /* Larger font size for readability */
+  color: white; /* White text color */
+  right: 10%;
+  position: relative;
+  /* top: 10px; */
+}
+
+#search-btn {
+  padding: 10px 20px; /* Larger padding for bigger buttons */
+  font-size: 1.2em; /* Larger font size for readability */
+  color: white; /* White text color */
+  border: none;
+  border-radius: 8px; /* Slightly rounded corners for a modern look */
+  cursor: pointer;
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  background-color: rgb(0, 5, 54); /* Green background */
+  top: 10px;
+  right: 200px;
+}
+
+/* Styles for the log out button */
+#logout-btn {
+  padding: 10px 20px;
+  margin-right: 0px; /* Space between log out button and anything to its left */
+  font-size: 1.2em; /* Larger font size for readability */
+  color: white; /* White text color */
+  border: none;
+  border-radius: 8px; /* Slightly rounded corners for a modern look */
+  cursor: pointer;
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  background-color: rgb(0, 5, 54); /* Green background */
+  position: absolute;
+  /* top: 10px;
+  right: 250px; */
+}
+#logout-btn:hover {
+  background-color: #0D47A1; /* Darker blue on hover */
+}
+
+/* Bottom buttons container */
+.bottom-button-container {
+  position: fixed;
+  left: 52%;
+  bottom: 15%; /* Adjust distance from bottom as necessary */
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px; /* Adjust spacing between buttons */
+}
+
+/* Style for the individual buttons at the bottom */
+.bottom-button-container button {
+  padding: 15px 30px; /* Larger padding for bigger buttons */
+  font-size: 1.2em; /* Larger font size for readability */
+  color: white; /* White text color */
+  border: none;
+  border-radius: 8px; /* Slightly rounded corners for a modern look */
+  cursor: pointer;
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  background-color: rgb(0, 5, 54); /* Green background */
+}
+
+
+
+.bottom-button-container button:hover {
+  background-color: #0D47A1; /* Darker blue on hover */
+}
+#sliding-text-box-left {
+  position: fixed;
+  top: 30%;
+  left: -20%; /* Start off-screen, assuming the width is 33.33% */
+  width: 20%;
+  height: 30%; /* Take the full height of the screen */
+  background: linear-gradient(to right, #000000, #091b33); /* Blue and black gradient */
+  color: #000000; /* Text color */
+  padding: 20px; /* Add some padding */
+  box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for depth */
+  overflow-y: auto; /* In case the content overflows */
+  z-index: 1000; /* Ensure it's above other elements */
+  border-radius: 8px;
+  animation: slideInLeft 1s forwards; /* Animation to slide in */
+}
+#sliding-text-box-right {
+  position: fixed;
+  top: 30%;
+  right: -20%; /* Start off-screen, assuming the width is 33.33% */
+  width: 20%;
+  height: 30%; /* Take the full height of the screen */
+  background: linear-gradient(to right, #000000, #091b33); /* Blue and black gradient */
+  color: #000000; /* Text color */
+  padding: 20px; /* Add some padding */
+  box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for depth */
+  overflow-y: auto; /* In case the content overflows */
+  z-index: 1000; /* Ensure it's above other elements */
+  border-radius: 8px;
+  animation: slideInRight 1s forwards; /* Animation to slide in */
+}
+
+/* Keyframes for the slide-in animation */
+@keyframes slideInLeft {
+  from {
+      left: -20%;
+  }
+  to {
+      left: 5%;
+  }
+}
+@keyframes slideInRight {
+  from {
+      right: -20%;
+  }
+  to {
+      right: 5%;
+  }
+}
+
+/* Styling for the paragraph or content inside the text box */
+#sliding-text-box-left p {
+  margin: 0;
+  color: #FFF;
+  font-size: 16px; /* Adjust the font size as needed */
+  line-height: 1.6; /* Adjust line height for readability */
+}

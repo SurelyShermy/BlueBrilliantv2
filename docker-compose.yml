@@ -11,11 +11,14 @@ services:
     ports:
       - "3306:3306"
 
-  app:
+  public:
     build: .
     env_file:
       - ./.env
     environment:
+      - WAIT_HOSTS=mysql:3306
+      - WAIT_HOSTS_TIMEOUT=180
+      - WAIT_SLEEP_INTERVAL=5
       - DB_NAME=${MYSQL_DATABASE}
       - DB_USER=root
       - DB_PASS=${MYSQL_ROOT_PASSWORD}
@@ -25,3 +28,5 @@ services:
       - mysql
     ports:
       - '8080:8080'
+    volumes:
+    - .:/app
