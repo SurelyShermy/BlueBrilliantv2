@@ -10,5 +10,5 @@ urlpatterns = [
     path('register/', register, name='register'),
     path('userdashboard/', user_dashboard, name='userdashboard'),
     path('logout/', LogoutView.as_view(next_page='index'), name='logout'),
-    
+    path('game/', board, name='board')
 ]

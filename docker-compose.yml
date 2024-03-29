@@ -30,3 +30,8 @@ services:
       - '8080:8080'
     volumes:
     - .:/app
+
+  rust_server:
+    build: ./engine
+    ports:
+      - '4000:8080'
