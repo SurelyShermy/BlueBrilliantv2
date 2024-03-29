@@ -7,5 +7,5 @@ urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
     path('register/', register, name='register'),
     path('userdashboard/', user_dashboard, name='userdashboard'),
-
-]
+    path('game/', board, name='board')
+]   
