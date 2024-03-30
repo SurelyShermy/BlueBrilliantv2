@@ -271,7 +271,7 @@ function highlightValidMoves(index) {
 
     // Prepare the URL with the appropriate game ID and start index
     // Make sure to replace this with your actual game ID
-    const url = `localhost:8000/game/${gameState.id}/valid_moves/${index}`;
+    const url = `http://localhost:4000/game/${gameState.id}/valid_moves/${index}`;
 
     fetch(url)
     .then(response => response.json())
@@ -345,7 +345,7 @@ function handleCellClick(event) {
             }
         }
         if (piece !== 0) {
-            highlightValidMoves(piece, index);
+            highlightValidMoves(index);
         // A piece was clicked; proceed to the next step
         }else if (selectedCell !== null) {
             // An empty cell was clicked; move the piece if this is a valid move
@@ -375,7 +375,7 @@ function handleCellClick(event) {
             }
         }
         if (piece !== 0) {
-            highlightValidMoves(piece, index);
+            highlightValidMoves(index);
         // A piece was clicked; proceed to the next step
         }else if (selectedCell !== null) {
             // An empty cell was clicked; move the piece if this is a valid move
@@ -404,44 +404,56 @@ function updateCapturedPiecesDisplay(piece) {
 }
 function engine_move() {
     // Make a move for the engine
-    const url = `localhost:8000/game/${gameState.id}/engine_move`;
+    const url = `http://localhost:4000/game/${gameState.id}/engine_move`;
     document.getElementById('engineThinkingOverlay').style.display = 'block';
     document.getElementById('spinner').style.display = 'block';
-    fetch(url)
-    .then(response => response.json())
-    .then(data => {
-        gameState.board = data.board;
-    })
-    .catch(error => {
-        console.error('Error fetching engine board:', error);
-    });
-    if (gameState.turn == 0) {
-        gameState.turn = 1;
-    } else {
-        gameState.turn = 0;
-    }
-    document.getElementById('engineThinkingOverlay').style.display = 'none';
-    document.getElementById('spinner').style.display = 'none';
-    return;
-}
-function movePiece(fromIndex, toIndex){
-    if (gameState.turn == 0) {
-        gameState.turn = 1;
-    } else {
-        gameState.turn = 0;
-    }
-    url = `localhost:8000/game/${gameState.id}/move/${fromIndex}/${toIndex}`;
     fetch(url, {
         method: 'POST',
         // Include any needed headers, like for CSRF tokens or authentication
     })
     .then(response => response.json())
+    .then(data => {
+        gameState.board = data.board;
+        updateDom();
+        if (gameState.turn == 0) {
+            gameState.turn = 1;
+        } else {
+            gameState.turn = 0;
+        }
+        document.getElementById('engineThinkingOverlay').style.display = 'none';
+        document.getElementById('spinner').style.display = 'none';
+    })
+    .catch(error => {
+        console.error('Error fetching engine board:', error);
+    });
+    
+    return;
+}
+function movePiece(fromIndex, toIndex){
+    clearOriginHighlights();
+    if (gameState.turn == 0) {
+        gameState.turn = 1;
+    } else {
+        gameState.turn = 0;
+    }
+
+    url = `http://localhost:4000/game/${gameState.id}/move/${fromIndex}/${toIndex}`;
+    fetch(url, {
+        method: 'POST',
+        // Include any needed headers, like for CSRF tokens or authentication
+    })
+    .then(response => response.json())
+    .then(data => {
+        gameState.board = data.board;
+        updateDom();
+        if(gameState.engine && (gameState.turn == 1 && gameState.enginePlayingBlack || gameState.turn == 0 && gameState.enginePlayingWhite)){
+            engine_move();
+        }
+    })
     .catch(error => {
         console.error('Error starting making move:', error);
     });
-    if(gameState.engine && (gameState.turn == 1 && gameState.enginePlayingBlack || gameState.turn == 0 && gameState.enginePlayingWhite)){
-        engine_move();
-    }
+    
     return;
 }
 

@@ -81,42 +81,39 @@
     <div id="engineThinkingOverlay"></div>
 
     <!--Apparently Adding scripts to the bottom of body is ideal so here it is-->
-    <script src="{% static 'public/js/board_utilities/board.js' %}"></script>
+    <!-- <script src="{% static 'public/js/board_utilities/board.js' %}"></script>
     <script src="{% static 'public/js/board_utilities/setup.js' %}"></script>
-    <script src="{% static 'public/js/board_utilities/utilities.js' %}"></script>
-    <!-- <script>
-      function loadScript(src, onload) {
-        let script = document.createElement("script");
-        script.onload = onload
-          ? onload
-          : function (e) {
-              console.log(e.target.src + " is loaded.");
-            };
-        script.src = src;
-        script.async = false;
-        document.head.appendChild(script);
+    <script src="{% static 'public/js/board_utilities/utilities.js' %}"></script> -->
+    <script>
+      function loadScripts(scripts, finalCallback) {
+        let loadedCount = 0;
+        
+        scripts.forEach(src => {
+          let script = document.createElement("script");
+          script.onload = function() {
+            console.log(src + " is loaded.");
+            loadedCount++;
+            // Check if all scripts are loaded
+            if (loadedCount === scripts.length && typeof finalCallback === "function") {
+              finalCallback(); // Call the final callback function
+            }
+          };
+          script.src = src;
+          script.async = false;
+          document.head.appendChild(script);
+        });
       }
-
-      // loadScript("fetchFEN.js");
-    //   loadScript("setup.js");
-    //   loadScript("utilities.js");
-    //   loadScript("board.js");
-    //   loadScript("evaluation.js");
-    //   loadScript("rules.js");
-    //   loadScript("evaluationUtils.js");
-    //   loadScript("transposition.js");
-    //   loadScript("engine.js");
-    //   loadScript("lose.js");
-    //   loadScript("win.js");
-    //   loadScript("merge.js");
-    //   loadScript("soundmgmt.js");
-    </script> -->
-    <!-- <script src="engine.js"></script>
-    <script src="fetchFEN.js"></script>
-    <script src="setup.js"></script>
-    <script src="utilities.js" defer></script>
-    <script src="evaluation.js"></script>
-    <script src="board.js"></script>
-    <script src="rules.js"></script> -->
+    
+      loadScripts([
+        "{% static 'public/js/board_utilities/setup.js' %}",
+        "{% static 'public/js/board_utilities/board.js' %}",
+        "{% static 'public/js/board_utilities/utilities.js' %}"
+      ], function() {
+        // This callback will be executed after all scripts are loaded
+        document.querySelectorAll('.cell').forEach(cell => {
+          cell.addEventListener('click', handleCellClick);
+        });
+      });
+    </script>
   </body>
 </html>
