@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -71,8 +72,7 @@
     <div id="black-timer">Black: 0:00</div>
     <footer class="container-fluid text-center">
       <p>
-        Developed by Alex Sherman, Johnny Lok, Liam Richards, Raushan Singh,
-        Julius Merlino for CSE442 Software Design Concepts for Professor Hertz
+        Developed by Alex Sherman and Dylan Zinsley
       </p>
     </footer>
 
@@ -81,7 +81,10 @@
     <div id="engineThinkingOverlay"></div>
 
     <!--Apparently Adding scripts to the bottom of body is ideal so here it is-->
-    <script>
+    <script src="{% static 'public/js/board_utilities/board.js' %}"></script>
+    <script src="{% static 'public/js/board_utilities/setup.js' %}"></script>
+    <script src="{% static 'public/js/board_utilities/utilities.js' %}"></script>
+    <!-- <script>
       function loadScript(src, onload) {
         let script = document.createElement("script");
         script.onload = onload
@@ -107,7 +110,7 @@
     //   loadScript("win.js");
     //   loadScript("merge.js");
     //   loadScript("soundmgmt.js");
-    </script>
+    </script> -->
     <!-- <script src="engine.js"></script>
     <script src="fetchFEN.js"></script>
     <script src="setup.js"></script>
