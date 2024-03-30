@@ -36,4 +36,8 @@ services:
       dockerfile: dockerfile
     ports:
       - '4000:8080'
-    
+    environment:
+    - ROCKET_LOG=debug
+    tty: true
+    volumes:
+      - ./engine/BlueBrilliant/src:/usr/src/blue_brilliant/src
