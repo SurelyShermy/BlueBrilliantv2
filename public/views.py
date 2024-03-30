@@ -40,6 +40,7 @@ def custom_login(request):
             return response
 
     return render(request, 'index.html', {'show_login_modal': True})
+
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -74,3 +75,13 @@ def user_dashboard(request):
 def custom_logout(request):
     logout(request)
     return redirect('public/index.html')
+
+def game(request):
+    return render(request, 'public/board.html')
+
+def logout(request):
+    response = HttpResponseRedirect('/')
+    response.delete_cookie('auth_token')
+    return response
+def create_game(request):
+    return render(request, 'public/create_game.html')

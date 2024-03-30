@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html>
 
@@ -27,22 +28,53 @@
 
   <div class="top-bar">
     <p id="userNameDisplay">You are logged in as: {{ user.username }}</p>
-    <button id="logout-btn" href="{% url 'logout' %}">Log Out</button>
+    <button id="logout-btn">Log Out</button>
   </div>
   <div id="sliding-text-box-left">
     <p id="totalPlayed"></p>
     <br />
-    <p id="totalWins"></p>
+    <p id="totalWins">{{ user.wins }}</p>
     <br />
     <p id="winRate"></p>
     
   </div>
 
   <div class="bottom-button-container">
-    <button id="randomMoves">Play Random Moves</button>
-    <button id="overBoard">Play Over the Board</button>
+    <button id="pvp">Play Online</button>
     <button id="pve">Play Against the Engine</button>
   </div>
 </body>
-
+<script>
+  document.getElementById('pvp').addEventListener('click', function() {
+    fetch('http://localhost:4000/create_game', {
+        method: 'POST',
+        // Include any needed headers, like for CSRF tokens or authentication
+    })
+    .then(response => response.json())
+    .then(game_id => {
+        // Redirect the user to the game page with the unique game ID
+        window.location.href = `{% url 'game' %}?mode=online&id=${game_id}`;
+    })
+    .catch(error => {
+        console.error('Error starting new game:', error);
+    });
+  });
+  document.getElementById('pve').addEventListener('click', function() {
+    fetch('http://localhost:4000/create_game', {
+        method: 'POST',
+        // Include any needed headers, like for CSRF tokens or authentication
+    })
+    .then(response => response.json())
+    .then(game_id => {
+        // Redirect the user to the game page with the unique game ID
+        window.location.href = `{% url 'game' %}?mode=engine&id=${game_id}`;
+    })
+    .catch(error => {
+        console.error('Error starting new game:', error);
+    });
+  });
+  document.getElementById('logout-btn').addEventListener('click', function() {
+    window.location.href = "{% url 'logout' %}";
+  });
+  </script>
 </html>
