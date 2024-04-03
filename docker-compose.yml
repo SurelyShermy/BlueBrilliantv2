@@ -40,6 +40,8 @@ services:
     - ROCKET_LOG=debug
     - ROCKET_ADDRESS=0.0.0.0
     - ROCKET_PORT=8080
+    - ROCKET_SECRET_KEY=xoYbrxK0ry7unoU97dX/Efk+nitNMtOU5796J112FT8=
+
     tty: true
     volumes:
       - ./engine/BlueBrilliant/src:/usr/src/blue_brilliant/src

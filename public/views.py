@@ -12,7 +12,10 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.http import HttpResponse
-
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.urls import reverse
 from .models import AuthToken
 
 class CustomLoginView(LoginView):
@@ -76,12 +79,44 @@ def custom_logout(request):
     logout(request)
     return redirect('public/index.html')
 
-def game(request):
-    return render(request, 'public/board.html')
+def pvp(request, game_id):
+    # Retrieve gameState from session
+    print("pvp request", request)
+    gameState = request.session.get('gameState')
+    context = {'gameState': gameState}
+    print("made it here")
+    return render(request, 'public/board.html', context)
 
 def logout(request):
     response = HttpResponseRedirect('/')
     response.delete_cookie('auth_token')
     return response
-def create_game(request):
-    return render(request, 'public/create_game.html')
+
+@require_POST
+def mp_session_setup(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        gameState = data.get('gameState')
+        game_id = data.get('game_id')
+
+        # Store the gameState and game_id in the session
+        request.session['gameState'] = gameState
+        request.session['game_id'] = game_id  # Store game_id if needed
+
+        # Redirect to the 'pvp' view with the game_id
+        print("this is the reversed url", reverse('game', kwargs={'game_id': game_id}))
+        return redirect(reverse('game', kwargs={'game_id': game_id}))
+
+    # Handle other HTTP methods or error case
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+def pve_session_setup(request):
+    game_id = request.GET.get('game_id')
+    player = request.GET.get('player')
+
+    if not game_id:
+        return JsonResponse({'error': 'Game ID is required'}, status=400)
+    request.session['game_id'] = game_id
+    request.session['game_mode'] = 'pve'
+    request.session['player'] = player
+    request.session['player_color'] = 'choose'
+    return JsonResponse({'success': True})

@@ -25,7 +25,7 @@
 </head>
 
 <body>
-
+  <div id="matchmakingStatus"></div>
   <div class="top-bar">
     <p id="userNameDisplay">You are logged in as: {{ user.username }}</p>
     <button id="logout-btn">Log Out</button>
@@ -45,29 +45,80 @@
   </div>
 </body>
 <script>
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
   document.getElementById('pvp').addEventListener('click', function() {
-    fetch('http://localhost:4000/create_game', {
-        method: 'POST',
-        // Include any needed headers, like for CSRF tokens or authentication
-    })
-    .then(response => response.json())
-    .then(game_id => {
-        // Redirect the user to the game page with the unique game ID
-        window.location.href = `{% url 'game' %}?mode=online&id=${game_id}`;
-    })
-    .catch(error => {
-        console.error('Error starting new game:', error);
+        // Indicate that matchmaking has started
+        const statusDiv = document.getElementById('matchmakingStatus');
+        statusDiv.innerText = "Searching for a match...";
+        const user_id = '{{ user.username }}'
+        // Function to check matchmaking status
+        function checkMatchmaking() {
+          fetch('http://localhost:4000/matchmaking/'+user_id, {
+              method: 'POST',
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.match_found) {
+              console.log(data.game_id);
+              const game_id = data.game_id;
+              
+              // Send a POST request to the server to set up the game session
+              fetch('mp_session_setup/', {  // Adjusted the endpoint
+                  method: 'POST',
+                  credentials: 'include',  // Ensures cookies, including Django session cookie, are sent
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'X-CSRFToken': getCookie('csrftoken'),  // Ensure CSRF token is included
+                  },
+                  body: JSON.stringify({ game_id: game_id, gameState: data.gameState })  // Include both game_id and gameState in the body
+              })
+              .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;  // If there's a redirect, follow it
+                } else {
+                    console.error('Expected a redirect but did not receive one.');
+                }
+              })
+              .catch(error => {
+                  console.error('Error setting up game session in Django:', error);
+              });
+          }else {
+                  // Update the status and continue polling
+                  statusDiv.innerText = `Searching for a match... Players in queue: ${data.players_in_queue}`;
+                  setTimeout(checkMatchmaking, 5000);  // Poll every 5 seconds
+              }
+          })
+          .catch(error => {
+              console.error('Error checking matchmaking status:', error);
+          });
+      }
+
+        // Start polling
+        checkMatchmaking();
     });
-  });
   document.getElementById('pve').addEventListener('click', function() {
-    fetch('http://localhost:4000/create_game', {
+    fetch('http://localhost:4000/engine_game', {
         method: 'POST',
         // Include any needed headers, like for CSRF tokens or authentication
     })
     .then(response => response.json())
     .then(game_id => {
         // Redirect the user to the game page with the unique game ID
-        window.location.href = `{% url 'game' %}?mode=engine&id=${game_id}`;
+        window.location.href = `{% url 'engine' %}?mode=engine&id=${game_id}`;
     })
     .catch(error => {
         console.error('Error starting new game:', error);
