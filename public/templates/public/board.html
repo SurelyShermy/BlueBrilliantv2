@@ -11,24 +11,27 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background-image: url("../static/public/images/chessboardBackground.png");
+        background-image: url("{% static '/public/images/chessboardBackground.png' %}");
         background-position: absolute;
         background-position-y: -70px;
         background-position-x: -33px;
         background-size: cover;
       }
     </style>
+    
   </head>
 
   <body>
+    <div id="userData" data-username="{{ user.username }}"></div>
+
     <div id="chessContainer">
       <div id="engineStatus">
         <img
-          src="../static/public/images/newlogo.png"
+          src="{% static '/public/images/newlogo.png' %}"
           alt="BlueBrilliant Logo"
           class="engine-logo"
         />
-        <span class="engine-name">BlueBrilliant</span>
+        <span class="engine-name">"{{ user.username }}"</span>
         <div class="spinner" id="spinner"></div>
       </div>
       <div id="chessBoard"></div>
@@ -36,11 +39,15 @@
 
     <div id="colorSelectionModal" class="modal">
       <div class="modal-content">
-        <h2>Choose Your Color</h2>
-        <button id="selectWhite">White</button>
-        <button id="selectBlack">Black</button>
+          <h2>Choose Your Color</h2>
+          <form id="colorForm" method="POST">
+              <input type="hidden" name="game_id" id="gameIdInput" value="">
+              <input type="hidden" name="player_color" id="playerColorInput" value="">
+              <button type="submit" id="selectWhite" data-color="white">White</button>
+              <button type="submit" id="selectBlack" data-color="black">Black</button>
+          </form>
       </div>
-    </div>
+  </div>
     <div id="win-modal-container" class="modal"></div>
     <div id="lose-modal-container" class="modal"></div>
     <div id="draw-modal-container" class="modal"></div>
@@ -84,36 +91,6 @@
     <!-- <script src="{% static 'public/js/board_utilities/board.js' %}"></script>
     <script src="{% static 'public/js/board_utilities/setup.js' %}"></script>
     <script src="{% static 'public/js/board_utilities/utilities.js' %}"></script> -->
-    <script>
-      function loadScripts(scripts, finalCallback) {
-        let loadedCount = 0;
-        
-        scripts.forEach(src => {
-          let script = document.createElement("script");
-          script.onload = function() {
-            console.log(src + " is loaded.");
-            loadedCount++;
-            // Check if all scripts are loaded
-            if (loadedCount === scripts.length && typeof finalCallback === "function") {
-              finalCallback(); // Call the final callback function
-            }
-          };
-          script.src = src;
-          script.async = false;
-          document.head.appendChild(script);
-        });
-      }
-    
-      loadScripts([
-        "{% static 'public/js/board_utilities/setup.js' %}",
-        "{% static 'public/js/board_utilities/board.js' %}",
-        "{% static 'public/js/board_utilities/utilities.js' %}"
-      ], function() {
-        // This callback will be executed after all scripts are loaded
-        document.querySelectorAll('.cell').forEach(cell => {
-          cell.addEventListener('click', handleCellClick);
-        });
-      });
-    </script>
+    <script src="{% static 'public/js/board_utilities/board.js' %}"></script>
   </body>
 </html>

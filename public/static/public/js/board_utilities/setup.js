@@ -34,18 +34,18 @@ class pieceBitRep {
   }
 // 00000001
 const svgPaths = {
-    [pieceBitRep.white | pieceBitRep.king]: "../static/public/images/chessPieces/white/K.svg",
-    [pieceBitRep.white | pieceBitRep.pawn]: "../static/public/images/chessPieces/white/P.svg",
-    [pieceBitRep.white | pieceBitRep.knight]: "../static/public/images/chessPieces/white/N.svg",
-    [pieceBitRep.white | pieceBitRep.bishop]: "../static/public/images/chessPieces/white/B.svg",
-    [pieceBitRep.white | pieceBitRep.rook]: "../static/public/images/chessPieces/white/R.svg",
-    [pieceBitRep.white | pieceBitRep.queen]: "../static/public/images/chessPieces/white/Q.svg",
-    [pieceBitRep.black | pieceBitRep.king]: "../static/public/images/chessPieces/black/k.svg",
-    [pieceBitRep.black | pieceBitRep.pawn]: "../static/public/images/chessPieces/black/p.svg",
-    [pieceBitRep.black | pieceBitRep.knight]: "../static/public/images/chessPieces/black/n.svg",
-    [pieceBitRep.black | pieceBitRep.bishop]: "../static/public/images/chessPieces/black/b.svg",
-    [pieceBitRep.black | pieceBitRep.rook]: "../static/public/images/chessPieces/black/r.svg",
-    [pieceBitRep.black | pieceBitRep.queen]: "../static/public/images/chessPieces/black/q.svg"
+    [pieceBitRep.white | pieceBitRep.king]: "../../static/public/images/chessPieces/white/K.svg",
+    [pieceBitRep.white | pieceBitRep.pawn]: "../../static/public/images/chessPieces/white/P.svg",
+    [pieceBitRep.white | pieceBitRep.knight]: "../../static/public/images/chessPieces/white/N.svg",
+    [pieceBitRep.white | pieceBitRep.bishop]: "../../static/public/images/chessPieces/white/B.svg",
+    [pieceBitRep.white | pieceBitRep.rook]: "../../static/public/images/chessPieces/white/R.svg",
+    [pieceBitRep.white | pieceBitRep.queen]: "../../static/public/images/chessPieces/white/Q.svg",
+    [pieceBitRep.black | pieceBitRep.king]: "../../static/public/images/chessPieces/black/k.svg",
+    [pieceBitRep.black | pieceBitRep.pawn]: "../../static/public/images/chessPieces/black/p.svg",
+    [pieceBitRep.black | pieceBitRep.knight]: "../../static/public/images/chessPieces/black/n.svg",
+    [pieceBitRep.black | pieceBitRep.bishop]: "../../static/public/images/chessPieces/black/b.svg",
+    [pieceBitRep.black | pieceBitRep.rook]: "../../static/public/images/chessPieces/black/r.svg",
+    [pieceBitRep.black | pieceBitRep.queen]: "../../static/public/images/chessPieces/black/q.svg"
 };
 var move = {
     fromIndex: 0,
@@ -83,64 +83,6 @@ function toHexIndex(index) {
     return newIndex;
 }
 var boardState = new Array(64).fill(0);
-var gameState = {
-    //0 Indicates white to move, 1 indicates black to move
-    id: 0,
-    turn: 0,
-    //Grabbing the boardstate form board.js
-    //1D array numbered from 0 - 63
-    board : boardState,
-    // check : false,
-    //If the king is in check, this will be populated with the squares that are causing check
-    //Specifically, the square that the checking piece is attacking from, if double check, this will contain both squares
-    // checkingSquares : [],
-    // checkmate : false,
-    // stalemate : false,
-    //Will contain the square that can be captured enpassant
-    // enpassant : null,
-    // For the fifty-move rule. It counts the number of half-moves since the last capture or pawn move, which can be used to determine draw conditions.
-    // pinnedPieces: [],
-    // passedPawns: [],
-    // isolatedPawns: [],
-    // doubledPawns: [],
-
-    // pinners : [],
-    //The number of full moves made in the game
-    //This determines if the players have agreed to play with time increments per move
-    timeIncrementOn : false,
-    //This will be used to determine if castling is possible and on which side its possible to do so
-    // castlingBlack :{
-    //     king : true,
-    //     queen : true
-    // },
-    // castlingWhite : {
-    //     king : true,
-    //     queen : true
-    // },
-    // whiteKingPos : 4,
-    // blackKingPos : 0x74,
-    //This stores only the last move made, makes it easy to send move orders up to the DB
-    // lastMove : new Array(4).fill(0),
-    //Store all moves that have been made in normal chess notation, this should be sent
-    // moveHistory : [],
-    // positionHistory : [],
-    // capturedPiece : 0,
-    // guest : false,
-
-    //0 indicates black win, 1 indicates white win, .5 indicates draw, null indicates game is still in progress
-    // result : null,
-    // gamePhase : 24,
-    // //Engine Considerations
-    enginePlayingWhite : false,
-    enginePlayingBlack : false,
-    engine : false,
-    // randomMoves : false,
-    // whiteAttackTable: Array(64).fill(null).map(() => []),
-    // blackAttackTable: Array(64).fill(null).map(() => []),
-
-};
-
-
 /*
 OK so maybe this isnt the best way to do this but I figured hardcoding the initial position is probably for the best.
 
@@ -229,5 +171,3 @@ for(let i = 8; i > 0; i--){
       start++;
     }
 }
-gameState.board = boardState;
-console.log(gameState.board)

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import index, register, user_dashboard, CustomLoginView, game
+from .views import index, register, user_dashboard, CustomLoginView, pvp, pve_session_setup, mp_session_setup
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 
@@ -10,5 +10,7 @@ urlpatterns = [
     path('register/', register, name='register'),
     path('userdashboard/', user_dashboard, name='userdashboard'),
     path('logout/', LogoutView.as_view(next_page='index'), name='logout'),
-    path('game/', game, name='game')
+    path('userdashboard/mp_session_setup/', mp_session_setup, name='mp_session_setup'),
+    path('pvp/<str:game_id>/', pvp, name='game'),
+    path('engine/', pve_session_setup, name='engine')
 ]
