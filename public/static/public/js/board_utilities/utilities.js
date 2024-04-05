@@ -82,10 +82,7 @@ function copyGameState(gameState) {
     return JSON.parse(JSON.stringify(gameState));
 }
 function updateDom(){
-    for (let i = 0; i < 128; i++) {
-        if(onBoard(i) == false){
-            continue;
-        }
+    for (let i = 0; i < 64; i++) {
         const cell = document.getElementById(`cell-${i}`);
         const piece = gameState.board[i];
 

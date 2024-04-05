@@ -34,18 +34,18 @@ class pieceBitRep {
   }
 // 00000001
 const svgPaths = {
-    [pieceBitRep.white | pieceBitRep.king]: "chessPieces/white/K.svg",
-    [pieceBitRep.white | pieceBitRep.pawn]: "chessPieces/white/P.svg",
-    [pieceBitRep.white | pieceBitRep.knight]: "chessPieces/white/N.svg",
-    [pieceBitRep.white | pieceBitRep.bishop]: "chessPieces/white/B.svg",
-    [pieceBitRep.white | pieceBitRep.rook]: "chessPieces/white/R.svg",
-    [pieceBitRep.white | pieceBitRep.queen]: "chessPieces/white/Q.svg",
-    [pieceBitRep.black | pieceBitRep.king]: "chessPieces/black/k.svg",
-    [pieceBitRep.black | pieceBitRep.pawn]: "chessPieces/black/p.svg",
-    [pieceBitRep.black | pieceBitRep.knight]: "chessPieces/black/n.svg",
-    [pieceBitRep.black | pieceBitRep.bishop]: "chessPieces/black/b.svg",
-    [pieceBitRep.black | pieceBitRep.rook]: "chessPieces/black/r.svg",
-    [pieceBitRep.black | pieceBitRep.queen]: "chessPieces/black/q.svg"
+    [pieceBitRep.white | pieceBitRep.king]: "../../static/public/images/chessPieces/white/K.svg",
+    [pieceBitRep.white | pieceBitRep.pawn]: "../../static/public/images/chessPieces/white/P.svg",
+    [pieceBitRep.white | pieceBitRep.knight]: "../../static/public/images/chessPieces/white/N.svg",
+    [pieceBitRep.white | pieceBitRep.bishop]: "../../static/public/images/chessPieces/white/B.svg",
+    [pieceBitRep.white | pieceBitRep.rook]: "../../static/public/images/chessPieces/white/R.svg",
+    [pieceBitRep.white | pieceBitRep.queen]: "../../static/public/images/chessPieces/white/Q.svg",
+    [pieceBitRep.black | pieceBitRep.king]: "../../static/public/images/chessPieces/black/k.svg",
+    [pieceBitRep.black | pieceBitRep.pawn]: "../../static/public/images/chessPieces/black/p.svg",
+    [pieceBitRep.black | pieceBitRep.knight]: "../../static/public/images/chessPieces/black/n.svg",
+    [pieceBitRep.black | pieceBitRep.bishop]: "../../static/public/images/chessPieces/black/b.svg",
+    [pieceBitRep.black | pieceBitRep.rook]: "../../static/public/images/chessPieces/black/r.svg",
+    [pieceBitRep.black | pieceBitRep.queen]: "../../static/public/images/chessPieces/black/q.svg"
 };
 var move = {
     fromIndex: 0,
@@ -82,64 +82,7 @@ function toHexIndex(index) {
     let newIndex = (index + (index & ~7))
     return newIndex;
 }
-var boardState = new Array(128).fill(0);
-var gameState = {
-    //0 Indicates white to move, 1 indicates black to move
-    turn: 0,
-    //Grabbing the boardstate form board.js
-    //1D array numbered from 0 - 63
-    board : boardState,
-    check : false,
-    //If the king is in check, this will be populated with the squares that are causing check
-    //Specifically, the square that the checking piece is attacking from, if double check, this will contain both squares
-    checkingSquares : [],
-    checkmate : false,
-    stalemate : false,
-    //Will contain the square that can be captured enpassant
-    enpassant : null,
-    // For the fifty-move rule. It counts the number of half-moves since the last capture or pawn move, which can be used to determine draw conditions.
-    pinnedPieces: [],
-    // passedPawns: [],
-    // isolatedPawns: [],
-    // doubledPawns: [],
-
-    pinners : [],
-    //The number of full moves made in the game
-    //This determines if the players have agreed to play with time increments per move
-    timeIncrementOn : false,
-    //This will be used to determine if castling is possible and on which side its possible to do so
-    castlingBlack :{
-        king : true,
-        queen : true
-    },
-    castlingWhite : {
-        king : true,
-        queen : true
-    },
-    whiteKingPos : 4,
-    blackKingPos : 0x74,
-    //This stores only the last move made, makes it easy to send move orders up to the DB
-    lastMove : new Array(4).fill(0),
-    //Store all moves that have been made in normal chess notation, this should be sent
-    moveHistory : [],
-    positionHistory : [],
-    capturedPiece : 0,
-    guest : false,
-
-    //0 indicates black win, 1 indicates white win, .5 indicates draw, null indicates game is still in progress
-    result : null,
-    gamePhase : 24,
-    //Engine Considerations
-    enginePlayingWhite : false,
-    enginePlayingBlack : false,
-    engine : false,
-    randomMoves : false,
-    whiteAttackTable: Array(64).fill(null).map(() => []),
-    blackAttackTable: Array(64).fill(null).map(() => []),
-
-};
-
-
+var boardState = new Array(64).fill(0);
 /*
 OK so maybe this isnt the best way to do this but I figured hardcoding the initial position is probably for the best.
 
@@ -156,28 +99,28 @@ boardState[4] = pieceBitRep.white | pieceBitRep.king;
 boardState[5] = pieceBitRep.white | pieceBitRep.bishop;
 boardState[6] = pieceBitRep.white | pieceBitRep.knight;
 boardState[7] = pieceBitRep.white | pieceBitRep.rook;
-for (let i = 0x10; i < 0x18; i++) {
+for (let i = 8; i < 16; i++) {
     boardState[i] = pieceBitRep.white | pieceBitRep.pawn;
 }
-for (let i = 0x60; i < 0x68; i++) {
+for (let i = 48; i < 56; i++) {
     boardState[i] = pieceBitRep.black | pieceBitRep.pawn;
 }
-boardState[0x70] = pieceBitRep.black | pieceBitRep.rook;
-boardState[0x71] = pieceBitRep.black | pieceBitRep.knight;
-boardState[0x72] = pieceBitRep.black | pieceBitRep.bishop;
-boardState[0x73] = pieceBitRep.black | pieceBitRep.queen;
-boardState[0x74] = pieceBitRep.black | pieceBitRep.king;
-boardState[0x75] = pieceBitRep.black | pieceBitRep.bishop;
-boardState[0x76] = pieceBitRep.black | pieceBitRep.knight;
-boardState[0x77] = pieceBitRep.black | pieceBitRep.rook;
+boardState[56] = pieceBitRep.black | pieceBitRep.rook;
+boardState[57] = pieceBitRep.black | pieceBitRep.knight;
+boardState[58] = pieceBitRep.black | pieceBitRep.bishop;
+boardState[59] = pieceBitRep.black | pieceBitRep.queen;
+boardState[60] = pieceBitRep.black | pieceBitRep.king;
+boardState[61] = pieceBitRep.black | pieceBitRep.bishop;
+boardState[62] = pieceBitRep.black | pieceBitRep.knight;
+boardState[63] = pieceBitRep.black | pieceBitRep.rook;
 
 const chessBoard = document.getElementById("chessBoard");
 function getFile(index){
-    let ret = toDecIndex(index) & 7;
+    let ret = index & 7;
     return ret
 }
 function getRank(index){
-    let ret = toDecIndex(index) >> 3;
+    let ret = index >> 3;
     return ret
 }
 const notationMapping = {
@@ -203,13 +146,13 @@ const ranks = ['1','2','3','4','5','6','7','8'];
 //Populating the Board
 
 for(let i = 8; i > 0; i--){
-    let start = toHexIndex((i-1) * 8);
-    let end = toHexIndex((i * 8)-1);
+    let start = (i-1) * 8;
+    let end = (i * 8)-1;
     while(start <= end){
         const cell = document.createElement('div');
         cell.className = 'cell';
         cell.id = `cell-${start}`;
-        if (Math.floor(start / 16) % 2 === 0) {
+        if (Math.floor(start / 8) % 2 === 0) {
             cell.className += (start % 2 === 0) ? ' dark' : ' light';
           } else {
             cell.className += (start % 2 === 0) ? ' light' : ' dark';
@@ -228,5 +171,3 @@ for(let i = 8; i > 0; i--){
       start++;
     }
 }
-gameState.board = boardState;
-console.log(gameState.board)

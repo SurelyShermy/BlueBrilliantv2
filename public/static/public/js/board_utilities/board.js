@@ -1,17 +1,274 @@
 //Click Listner
 //Test
-document.querySelectorAll('.cell').forEach(cell => {
-    cell.addEventListener('click', handleCellClick);
+
+//This Piece implementation is adapted from the following source: https://youtu.be/U4ogK0MIzqk?t=82
+
+//It takes advantage of bit representations of pieces on the board to make the game more efficient. 
+
+/*
+Lets take a look at it like this:
+
+The designation for a king is 1
+0000001 = king
+
+and a designation for white is 16
+0010000 = white
+We can then do a bitwise or operation | to get the following:
+0010001 = white king!
+0011111
+//Liam was here
+
+so we should be able to declare pieces as follows:
+square  = piece.white | piece.king
+
+*/
+let ws;
+let username;
+let playing_white;
+let gameState = {
+    board: null, // This should be a function that returns the initial board setup
+    id: null,
+    player1_id: null,
+    player2_id: null,
+    player1_color: null,
+    player2_color: null,
+    turn: null,
+    board_array: [],
+    engine: false
+};
+document.addEventListener('DOMContentLoaded', function() {
+    const pathSegments = window.location.pathname.split('/');
+    const gameId = pathSegments.pop() || pathSegments.pop();
+    console.log(gameId)
+    username = document.getElementById('userData').dataset.username;
+    ws = new WebSocket(`ws://localhost:4000/ws/`+gameId);
+    ws.onopen = () => {
+        console.log('Connected to the server');
+        initialize = {
+            message_type: "Initialize",
+            data: {
+                game_id: gameId,
+            }
+        }
+        ws.send(JSON.stringify(initialize));
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+    };
+    ws.onmessage = (event) => {
+        let message = JSON.parse(event.data);
+        console.log(message);
+        if (message.message_type == "valid_moves") {
+            validMoves = message.moves;
+            console.log(validMoves);
+            validMoves.forEach(index => {
+                const cell = document.getElementById(`cell-${index}`);
+                cell.classList.add('highlight');
+            });
+        }
+        else if(message.message_type == "GameState"){
+            updateGameState(message);
+        }
+        
+        // Update your game state based on the received data
+    };
+    ws.onclose = () => {
+        console.log("Disconnected from the game WebSocket");
+    };
+    ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+    };
 });
+
+function updateGameState(message){
+    gameState.board = message.board_array;
+    gameState.turn = message.turn;
+    gameState.id = message.game_id;
+    gameState.player1_color = message.player1_color;
+    gameState.player2_color = message.player2_color;
+    gameState.player1_id = message.player1_id;
+    gameState.player2_id = message.player2_id;
+    gameState.engine = message.engine;
+    updateDom();
+    if (!playing_white){
+        flipBoard();
+    }
+}
+
+class pieceBitRep {
+    static none = 0;
+    static king = 1;
+    static pawn = 2;
+    static knight = 3;
+    static bishop = 4;
+    static rook = 5;
+    static queen = 6;
+  
+    static white = 8;
+    static black = 16;
+  }
+// 00000001
+const svgPaths = {
+    [pieceBitRep.white | pieceBitRep.king]: "../../static/public/images/chessPieces/white/K.svg",
+    [pieceBitRep.white | pieceBitRep.pawn]: "../../static/public/images/chessPieces/white/P.svg",
+    [pieceBitRep.white | pieceBitRep.knight]: "../../static/public/images/chessPieces/white/N.svg",
+    [pieceBitRep.white | pieceBitRep.bishop]: "../../static/public/images/chessPieces/white/B.svg",
+    [pieceBitRep.white | pieceBitRep.rook]: "../../static/public/images/chessPieces/white/R.svg",
+    [pieceBitRep.white | pieceBitRep.queen]: "../../static/public/images/chessPieces/white/Q.svg",
+    [pieceBitRep.black | pieceBitRep.king]: "../../static/public/images/chessPieces/black/k.svg",
+    [pieceBitRep.black | pieceBitRep.pawn]: "../../static/public/images/chessPieces/black/p.svg",
+    [pieceBitRep.black | pieceBitRep.knight]: "../../static/public/images/chessPieces/black/n.svg",
+    [pieceBitRep.black | pieceBitRep.bishop]: "../../static/public/images/chessPieces/black/b.svg",
+    [pieceBitRep.black | pieceBitRep.rook]: "../../static/public/images/chessPieces/black/r.svg",
+    [pieceBitRep.black | pieceBitRep.queen]: "../../static/public/images/chessPieces/black/q.svg"
+};
+var move = {
+    fromIndex: 0,
+    toIndex: 0,
+}
+const directions = {
+    NW : 15,
+    NE : 17,
+    N : 16,
+    S : -16,
+    SW : -17,
+    SE : -15,
+    E : 1,
+    W : -1,
+    knightmoves : [33, 31, 18, 14, -33, -31, -18, -14],
+};
+
+var boardState = new Array(64).fill(0);
+/*
+OK so maybe this isnt the best way to do this but I figured hardcoding the initial position is probably for the best.
+
+TODO: Need to see if its possible to put 0 at the bottom left rather than the top left, sides need to be swapped if this is done
+TODO: Add flip board button
+*/
+
+//We will proceed by intializing the board to the starting position
+boardState[0] = pieceBitRep.white | pieceBitRep.rook;
+boardState[1] = pieceBitRep.white | pieceBitRep.knight;
+boardState[2] = pieceBitRep.white | pieceBitRep.bishop;
+boardState[3] = pieceBitRep.white | pieceBitRep.queen;
+boardState[4] = pieceBitRep.white | pieceBitRep.king;
+boardState[5] = pieceBitRep.white | pieceBitRep.bishop;
+boardState[6] = pieceBitRep.white | pieceBitRep.knight;
+boardState[7] = pieceBitRep.white | pieceBitRep.rook;
+for (let i = 8; i < 16; i++) {
+    boardState[i] = pieceBitRep.white | pieceBitRep.pawn;
+}
+for (let i = 48; i < 56; i++) {
+    boardState[i] = pieceBitRep.black | pieceBitRep.pawn;
+}
+boardState[56] = pieceBitRep.black | pieceBitRep.rook;
+boardState[57] = pieceBitRep.black | pieceBitRep.knight;
+boardState[58] = pieceBitRep.black | pieceBitRep.bishop;
+boardState[59] = pieceBitRep.black | pieceBitRep.queen;
+boardState[60] = pieceBitRep.black | pieceBitRep.king;
+boardState[61] = pieceBitRep.black | pieceBitRep.bishop;
+boardState[62] = pieceBitRep.black | pieceBitRep.knight;
+boardState[63] = pieceBitRep.black | pieceBitRep.rook;
+
+const chessBoard = document.getElementById("chessBoard");
+function getFile(index){
+    let ret = index & 7;
+    return ret
+}
+function getRank(index){
+    let ret = index >> 3;
+    return ret
+}
+const notationMapping = {
+    a : 0,
+    b : 1,
+    c : 2,
+    d : 3,
+    e : 4,
+    f : 5,
+    g : 6,
+    h : 7,
+    1 : 0,
+    2 : 1,
+    3 : 2,
+    4 : 3,
+    5 : 4,
+    6 : 5,
+    7 : 6,
+    8 : 7
+}
+const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+const ranks = ['1','2','3','4','5','6','7','8'];
+//Populating the Board
+
+for(let i = 8; i > 0; i--){
+    let start = (i-1) * 8;
+    let end = (i * 8)-1;
+    while(start <= end){
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.id = `cell-${start}`;
+        if (Math.floor(start / 8) % 2 === 0) {
+            cell.className += (start % 2 === 0) ? ' dark' : ' light';
+          } else {
+            cell.className += (start % 2 === 0) ? ' light' : ' dark';
+        }
+        let squareNotation = "";
+        squareNotation = squareNotation.concat(files[getFile(start)]);
+        squareNotation = squareNotation.concat(ranks[(getRank(start))]);
+        cell.setAttribute('data-notation', squareNotation);
+        piece = boardState[start];
+        if (piece !== 0) {
+            const img = document.createElement('img');
+            img.src = svgPaths[piece];
+            cell.appendChild(img);
+        }
+      chessBoard.appendChild(cell);
+      start++;
+    }
+}
+
+
+
+
 let promotionPosition;
 let promotionPiece;
-
+function updateGameState(message){
+    gameState.board = message.board_array;
+    gameState.turn = message.turn;
+    gameState.id = message.game_id;
+    gameState.player1_color = message.player1_color;
+    gameState.player2_color = message.player2_color;
+    gameState.player1_id = message.player1_id;
+    gameState.player2_id = message.player2_id;
+    gameState.engine = message.engine;
+    if(username === gameState.player1_id){
+        if(gameState.player1_color === true){
+            playing_white = true;
+        }else{
+            playing_white = false;
+        }
+    }else if(username === gameState.player2_id){
+        if(gameState.player2_color === true){
+            playing_white = true;
+        }else{
+            playing_white = false;
+        }
+    }
+    if(!playing_white){
+        flipBoard();
+    }
+    updateDom();
+}
 function promptForPromotion(position, piece) {
     promotionPosition = position;
     promotionPiece = piece;
     document.getElementById("promotionModal").style.display = "block";
 }
 
+function getURLParameter(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
+  }
 function selectPromotionPiece(chosenPiece, resolve) {
     const color = promotionPiece ^ pieceBitRep.pawn;
     switch(chosenPiece) {
@@ -45,10 +302,6 @@ function selectPromotionPiece(chosenPiece, resolve) {
     document.getElementById("promotionModal").style.display = "none";
     resolve(chosenPiece);
 }
-
-function getURLParameter(name) {
-    return new URLSearchParams(window.location.search).get(name);
-}
 function movePieceToNotation(pieceType, fromIndex, toIndex) {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranks = ['1', '2', '3', '4', '5', '6', '7', '8'];
@@ -81,59 +334,30 @@ function movePieceToNotation(pieceType, fromIndex, toIndex) {
 }
 function showModal() {
     document.getElementById("colorSelectionModal").style.display = "block";
+
 }
-document.getElementById("selectWhite").addEventListener("click", function() {
-    gameState.enginePlayingBlack = true;
-    gameState.enginePlayingWhite = false;
+document.getElementById('selectWhite').addEventListener('click', function(event) {
+    event.preventDefault();
+    playerColorInput.value = 'white'; // Set the player color
+    form.action = `http://localhost:4000/engine_game/${gameState.id}/white`; // Set the form's action
+    form.submit(); // Programmatically submit the form
     closeModal();
 });
 
-document.getElementById("selectBlack").addEventListener("click", function() {
-    gameState.enginePlayingBlack = false;
-    gameState.enginePlayingWhite = true;
+document.getElementById("selectBlack").addEventListener("click", function(event) {
+    event.preventDefault();
+    playerColorInput.value = 'white'; // Set the player color
+    form.action = `http://localhost:4000/engine_game/${gameState.id}/white`; // Set the form's action
+    form.submit(); // Programmatically submit the form
     closeModal();
-    flipBoard();
     engineMakeMove();
 });
 
 function closeModal() {
     document.getElementById("colorSelectionModal").style.display = "none";
 }
-function initializeGameMode() {
-    // const mode = getURLParameter('mode');
-    const mode = 'engine';
-    switch(mode) {
-        case 'engine':
-            gameState.engine = true;
-            gameState.randomMoves = false;
-            showModal();
-            break;
-        case 'overboard':
-            gameState.enginePlayingBlack = false; 
-            gameState.enginePlayingWhite = false;
-            gameState.engine = false;
-            // set boolean for board mode
-            break;
-        case 'random':
-            gameState.enginePlayingBlack = true; 
-            gameState.enginePlayingWhite = false;
-            gameState.engine = true;
-            gameState.randomMoves = true;
-            // set boolean for random moves mode
-            break;
-        case 'guest':       
-            gameState.engine = true;
-            gameState.randomMoves = false;
-            gameState.guest = true;
-            showModal();
-            break;
-        default:
-            // default mode or error handling
-    }
-}
 
-// Call this function when the page loads
-initializeGameMode();
+
 
 
 let whiteTime = 600; // e.g., 10 minutes in seconds
@@ -212,82 +436,23 @@ function updateCapturedPiecesDisplay(piece) {
     }
 }
 
-
-function promoteToQueen(position, piece, domUpdate = true) {
-    const color = pieceColor(piece);
-    const promotedQueen = color | pieceBitRep.queen;
-    gameState.board[position] = promotedQueen;
-    if(domUpdate === true){
-        const cell = document.getElementById(`cell-${position}`);
-        const pawnImage = cell.querySelector('img');
-        if (pawnImage) {
-            cell.removeChild(pawnImage);
-        } else {
-            // console.log('No image found in the cell.');
-        }
-
-        const newPieceImg = document.createElement('img');
-        newPieceImg.src = svgPaths[gameState.board[position]];
-        cell.appendChild(newPieceImg);
-    }
-    return;
-}
-//Checks if it's a pawn that has reached the back rank
-function handlePawnPromotion(toIndex) {
-    return new Promise(resolve => {
-        const piece = gameState.board[toIndex];
-        const color = pieceColor(piece);
-        const type = pieceType(piece);
-
-        if (type === pieceBitRep.pawn) {
-            if ((color === pieceBitRep.white && toIndex >= toHexIndex(56) && toIndex <= toHexIndex(63)) ||
-                (color === pieceBitRep.black && toIndex >= 0 && toIndex <= 7)) {
-                
-                // Show the modal here
-                promptForPromotion(toIndex, piece);
-
-                document.getElementById('queenButton').onclick = () => selectPromotionPiece('queen', resolve);
-                document.getElementById('rookButton').onclick = () => selectPromotionPiece('rook', resolve);
-                document.getElementById('bishopButton').onclick = () => selectPromotionPiece('bishop', resolve);
-                document.getElementById('knightButton').onclick = () => selectPromotionPiece('knight', resolve);
-            }
-        }
-    });
-}
-function pawnToQueen(toIndex, domUpdate = true) {
-    const piece = gameState.board[toIndex];
-    const color = pieceColor(piece);
-    const type = pieceType(piece);
-    if (type == pieceBitRep.pawn) { 
-        // Check if it's a white pawn reaching rank 8 or a black pawn reaching rank 1
-        if ((color === pieceBitRep.white) && toIndex >= toHexIndex(56) && toIndex <= toHexIndex(63)) {
-            // console.log("White Pawn Promotion")
-            promoteToQueen(toIndex, piece, domUpdate)
-        } 
-        else if ((color === pieceBitRep.black) && toIndex >= 0 && toIndex <= 7) {
-            // console.log("Black Pawn Promotion")
-            promoteToQueen(toIndex, piece, domUpdate)
-        }
-    }
-    return
-}
-var gameStateStack = [];
-gameStateStack.push(copyGameState(gameState));
 var selectedCell = null; // Variable to hold the currently highlighted cell index
 var validMoves = []; // Variable to hold the valid moves for the currently selected piece
 
 
-function highlightValidMoves(piece, index) {
-    validMoves = [];
-    validMoves = calculateValidMoves(gameState, piece, index); // Implement this function based on the rules for each piece
-    // console.log(validMoves);
-    validMoves.forEach(moveIndex => {
-      const cell = document.getElementById(`cell-${moveIndex}`);
-      cell.classList.add('highlight');
-    });
-    const fromCell = document.getElementById(`cell-${index}`);
-    fromCell.classList.add('selected');
+function highlightValidMoves(index) {
+    clearHighlights();
+
+    const message = {
+        message_type: "moves_request",
+        data: {
+            from_index: index,
+            game_id: gameState.id,
+        }
+    };
     selectedCell = index;
+    // Send the message as a JSON string through the WebSocket
+    ws.send(JSON.stringify(message));
 }
 
 function clearHighlights() {
@@ -298,12 +463,6 @@ function clearHighlights() {
     document.querySelectorAll('.selected').forEach(cell => {
         cell.classList.remove('selected');
     });
-    // document.querySelectorAll('.origin-highlight').forEach(cell => {
-    //     cell.classList.remove('origin-highlight');
-    // });
-    // document.querySelectorAll('.to-highlight').forEach(cell => {
-    //     cell.classList.remove('to-highlight');
-    // });
   }
 function clearOriginHighlights() {
     document.querySelectorAll('.selected').forEach(cell => {
@@ -327,11 +486,10 @@ function handleCellClick(event) {
     const index = parseInt(cell.id.split('-')[1]);
     console.log("Square Number: ", index);
     const piece = gameState.board[index];
-    console.log("White King pos ", gameState.whiteKingPos)
-    console.log("Black King pos ", gameState.blackKingPos)
     console.log("Piece:", pieceMapping[piece]);
+
     //If its whites turn and a black piece is clicked, check if its a valid move for capture
-    if(gameState.turn === 0){
+    if(gameState.turn === true && playing_white === true){
         if (piece !== 0 && (pieceColor(piece) === pieceBitRep.black)){
             //Need to check if this is a capture before saying its invalid
             if (validMoves.includes(index)) {
@@ -348,7 +506,7 @@ function handleCellClick(event) {
             }
         }
         if (piece !== 0) {
-            highlightValidMoves(piece, index);
+            highlightValidMoves(index);
         // A piece was clicked; proceed to the next step
         }else if (selectedCell !== null) {
             // An empty cell was clicked; move the piece if this is a valid move
@@ -362,7 +520,7 @@ function handleCellClick(event) {
                 return;
             }
         }
-    }else if(gameState.turn === 1){
+    }else if(gameState.turn === false && playing_white === false){
         if (piece !== 0 && (pieceColor(piece) === pieceBitRep.white)){
             if (validMoves.includes(index)) {
                 movePiece(selectedCell, index);
@@ -378,7 +536,7 @@ function handleCellClick(event) {
             }
         }
         if (piece !== 0) {
-            highlightValidMoves(piece, index);
+            highlightValidMoves(index);
         // A piece was clicked; proceed to the next step
         }else if (selectedCell !== null) {
             // An empty cell was clicked; move the piece if this is a valid move
@@ -405,866 +563,447 @@ function updateCapturedPiecesDisplay(piece) {
         document.getElementById('black-captured-pieces').appendChild(pieceElement);
     }
 }
-
-
-
-async function movePiece(fromIndex, toIndex) {
-    laugh();
-    clearOriginHighlights();
-    //Add a copy of the stat
-    gameStateStack.push(copyGameState(gameState));
-    // Update the board state array
-
-    gameState.check= false;
-    gameState.checkingSquares = [];
-    const piece = gameState.board[fromIndex];
-    const fromColor = pieceColor(piece);
-    const takenPiece = gameState.board[toIndex];
-    const fromType = piece & 0b111;
-    gameState.moveHistory.push(movePieceToNotation(fromType, fromIndex, toIndex));
-    if(piece === (pieceBitRep.white | pieceBitRep.king)){
-        gameState.castlingWhite["king"] = false;
-        gameState.castlingWhite["queen"] = false;
-    }else if(piece === (pieceBitRep.black | pieceBitRep.king)){
-        gameState.castlingBlack["king"] = false;
-        gameState.castlingBlack["queen"] = false;
-    }
-    if(piece === (pieceBitRep.white | pieceBitRep.rook)){
-        if(fromIndex === 0){
-            gameState.castlingWhite["queen"] = false;
-        }else if(fromIndex === 7){
-            gameState.castlingWhite["king"] = false;
-        }
-    }
-    if(piece === (pieceBitRep.black | pieceBitRep.rook)){
-        if(fromIndex === 112){
-            gameState.castlingBlack["queen"] = false;
-        }else if(fromIndex === 119){
-            gameState.castlingBlack["king"] = false;
-        }
-    }
-    let rookPosition = null;
-    if(fromType === pieceBitRep.king && (Math.abs(toIndex - fromIndex) == 2)){
-        if(toIndex === 2){
-            gameState.board[0] = 0;
-            gameState.board[3] = pieceBitRep.white | pieceBitRep.rook;
-            const rookFromCell = document.getElementById(`cell-0`);
-            const rookToCell = document.getElementById(`cell-3`);
-            while (rookToCell.firstChild) {
-                rookToCell.removeChild(rookToCell.firstChild);
-            }
-            if (rookFromCell.firstChild) {
-                rookToCell.appendChild(rookFromCell.firstChild);
-            }
-            updateAttackTable(gameState, 3);
-            updateAttackTable(gameState, 0);
-            rookPosition = 3;
-
-        }else if(toIndex === 6){
-            gameState.board[7] = 0;
-            gameState.board[5] = pieceBitRep.white | pieceBitRep.rook;
-            const rookFromCell = document.getElementById(`cell-7`);
-            const rookToCell = document.getElementById(`cell-5`);
-            while (rookToCell.firstChild) {
-                rookToCell.removeChild(rookToCell.firstChild);
-            }
-            if (rookFromCell.firstChild) {
-                rookToCell.appendChild(rookFromCell.firstChild);
-            }
-            updateAttackTable(gameState, 5);
-            updateAttackTable(gameState, 7);
-            rookPosition = 5;
-
-        }else if(toIndex === 114){
-            gameState.board[112] = 0;
-            gameState.board[115] = pieceBitRep.black | pieceBitRep.rook;
-            const rookFromCell = document.getElementById(`cell-112`);
-            const rookToCell = document.getElementById(`cell-115`);
-            while (rookToCell.firstChild) {
-                rookToCell.removeChild(rookToCell.firstChild);
-            }
-            if (rookFromCell.firstChild) {
-                rookToCell.appendChild(rookFromCell.firstChild);
-            }
-            updateAttackTable(gameState, 115);
-            updateAttackTable(gameState, 116);
-            rookPosition = 115;
-
-
-        }else if(toIndex === 118){
-            gameState.board[119] = 0;
-            gameState.board[117] = pieceBitRep.black | pieceBitRep.rook;
-            const rookFromCell = document.getElementById(`cell-119`);
-            const rookToCell = document.getElementById(`cell-117`);
-            while (rookToCell.firstChild) {
-                rookToCell.removeChild(rookToCell.firstChild);
-            }
-            if (rookFromCell.firstChild) {
-                rookToCell.appendChild(rookFromCell.firstChild);
-            }
-            updateAttackTable(gameState, 118);
-            updateAttackTable(gameState, 119);
-            rookPosition = 118;
-
-        }
-    }
-    let potentialCapturedPiece = gameState.board[toIndex];
-    gameState.board[toIndex] = piece;
-    gameState.board[fromIndex] = 0;
-
-
-    const fromCell = document.getElementById(`cell-${fromIndex}`);
-    const toCell = document.getElementById(`cell-${toIndex}`);
-    
-    if (!toCell) {
-        console.error(`No element found with the ID: cell-${toIndex}`);
-        return;
-    }
-    // If there's a piece on the target cell (toCell), remove it (capture).
-    while (toCell.firstChild) {
-        //Adds captured piece to capture box
-        updateCapturedPiecesDisplay(potentialCapturedPiece);
-        toCell.removeChild(toCell.firstChild);
-    }
-    //add highlight for origin cell
-    toCell.classList.add('.to-highlight');
-    fromCell.classList.add('.origin-highlight');
-    // Move the piece from the source cell (fromCell) to the target cell (toCell).
-    if (fromCell.firstChild) {
-        toCell.appendChild(fromCell.firstChild);
-        
-    }
-
-    if(piece === (pieceBitRep.white | pieceBitRep.king)){
-        gameState.whiteKingPos = toIndex;
-    }else if(piece === (pieceBitRep.black | pieceBitRep.king)){
-        gameState.blackKingPos = toIndex;
-    }
-    var capturedPawnIndex = null;
-    // Check for en passant
-    if (toIndex === gameState.enpassant && (piece == (pieceBitRep.white | pieceBitRep.pawn) || piece == (pieceBitRep.black | pieceBitRep.pawn))) {
-        
-        if (piece === (pieceBitRep.white | pieceBitRep.pawn)) {
-            capturedPawnIndex = toIndex - 16;
-        }
-        else if (piece === (pieceBitRep.black | pieceBitRep.pawn)) {
-            capturedPawnIndex = toIndex + 16;
-        }
-        const epCell = document.getElementById(`cell-${capturedPawnIndex}`);
-        while (epCell.firstChild) {
-            //Adds captured piece to capture box
-            updateCapturedPiecesDisplay(gameState.board[capturedPawnIndex]);
-            epCell.removeChild(epCell.firstChild);
-        }
-        gameState.board[capturedPawnIndex] = 0;
-    }
-
-    
-    //Calculates the En Passant Square if a pawn has moved twice
-    if ((piece === (pieceBitRep.white | pieceBitRep.pawn)) || (piece === (pieceBitRep.black | pieceBitRep.pawn))) {
-        if (Math.abs(fromIndex - toIndex) === 32) { // Moved 2 squares
-            // Compute and store the en passant square
-            gameState.enpassant = (fromIndex + toIndex) / 2;
+function engine_move() {
+    // Make a move for the engine
+    const url = `http://localhost:4000/game/${gameState.id}/engine_move`;
+    document.getElementById('engineThinkingOverlay').style.display = 'block';
+    document.getElementById('spinner').style.display = 'block';
+    fetch(url, {
+        method: 'POST',
+        // Include any needed headers, like for CSRF tokens or authentication
+    })
+    .then(response => response.json())
+    .then(data => {
+        gameState.board = data.board;
+        updateDom();
+        if (gameState.turn == 0) {
+            gameState.turn = 1;
         } else {
-            gameState.enpassant = null;
+            gameState.turn = 0;
         }
-    } else {
-        gameState.enpassant = null;
-    }
-    if (piece === pieceBitRep.pawn) {
-        if ((color === pieceBitRep.white && toIndex >= toHexIndex(56) && toIndex <= toHexIndex(63)) ||
-            (color === pieceBitRep.black && toIndex >= 0 && toIndex <= 7)) {
-            await handlePawnPromotion(toIndex);
-            }
-    }
-    //Update boardstate
-
-    gameState.lastMove = [fromIndex, toIndex, piece, takenPiece];
-    //Check logic
-    clearPinnedPieces(gameState);
-    pinSearch(gameState, gameState.whiteKingPos);
-    pinSearch(gameState, gameState.blackKingPos);
-    updateAttackTable(gameState, toIndex);
-    updateAttackTable(gameState, fromIndex);
-    if(capturedPawnIndex !== null){
-        updateAttackTable(gameState, capturedPawnIndex);
-    }
-    for(let i = 0; i < 64; i++){
-        if(gameState.blackAttackTable[i].includes(toIndex)){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if(gameState.blackAttackTable[i].includes(fromIndex)){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if((capturedPawnIndex !== null) && (gameState.blackAttackTable[i].includes(capturedPawnIndex))){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if((rookPosition !== null) && (gameState.blackAttackTable[i].includes(rookPosition))){
-            updateAttackTable(gameState, toHexIndex(i));
-        }
-        if(gameState.whiteAttackTable[i].includes(toIndex)){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if(gameState.whiteAttackTable[i].includes(fromIndex)){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if((capturedPawnIndex !== null) && (gameState.whiteAttackTable[i].includes(capturedPawnIndex))){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if((rookPosition !== null) && (gameState.whiteAttackTable[i].includes(rookPosition))){
-            updateAttackTable(gameState, toHexIndex(i));
-        }
-    }
-    gameState.positionHistory.push(computeHash(gameState));
-    // runAttackTable(gameState);
-    if(gameState.turn == 0){
-        
-        if(isSquareUnderAttack(gameState, gameState.blackKingPos, pieceBitRep.white) == true){
-            gameState.check = true;
-            
-            const kingCell = document.getElementById(`cell-${gameState.blackKingPos}`);
-            kingCell.classList.add('blinking');
-            // console.log("Black King in check")
-            if(isCheckmate(gameState) == true){
-                //playWinAnimation()
-                if(gameState.enginePlayingWhite == true){
-                    loseChessGame();
-                    showLossModal();
-                }else{
-                    winChessGame();
-                    showWinModal();
-                }
-                // console.log("Checkmate");
-
-            }
-        }else{
-            if(isStalemate(gameState) == true){
-                //playDrawAnimation();
-                showDrawModal();
-                drawChessGame();
-
-                // console.log("Stalemate");
-
-            }
-            gameState.check= false;
-            gameState.checkingSquares = [];
-        }
-        gameState.turn = 1;
-        if(gameState.randomMoves == false && gameState.engine == true){
-            setTimeout(() => {
-                engineMakeMove();  // Replace with your engine's move function
-            }, 0);
-        }else if(gameState.randomMoves == true && gameState.engine == true){
-            engineRandomMove();
-        }
-
-    }else{
-        if(isSquareUnderAttack(gameState, gameState.whiteKingPos, pieceBitRep.black) == true){
-            gameState.check = true;
-            
-            console.log("White King in check")
-            const kingCell = document.getElementById(`cell-${gameState.whiteKingPos}`);
-            kingCell.classList.add('blinking');
-            if(isCheckmate(gameState)){
-
-                console.log("Checkmate")
-                //playLoseAnimation()
-                if(gameState.enginePlayingBlack == true){
-                    showLossModal();
-                    loseChessGame();
-                }else{
-                    showWinModal();
-                    winChessGame();
-                }
-                // console.log("Checkmate")
-                
-
-            }
-        }else{
-            if(isStalemate(gameState)){
-                //playDrawAnimation();
-
-                // console.log("Stalemate");
-                showDrawModal();
-                drawChessGame();
-            }
-            gameState.check = false;
-            gameState.checkingSquares = [];
-        }  
-        gameState.turn = 0;
-        if(gameState.randomMoves == false && gameState.engine == true){
-            setTimeout(() => {
-                engineMakeMove();  // Replace with your engine's move function
-            }, 0);
-        }else if(gameState.randomMoves == true && gameState.engine == true){
-            engineRandomMove();
-        }
-
-    }
-
-    //TODO: add check, halfmove, full move, castling, enpassant, and result logic
-    // startTimer();
+        document.getElementById('engineThinkingOverlay').style.display = 'none';
+        document.getElementById('spinner').style.display = 'none';
+    })
+    .catch(error => {
+        console.error('Error fetching engine board:', error);
+    });
+    
+    return;
 }
-
-
-//Same as move piece but has NO DOM UPDATE
-function testMovePiece(fromIndex, toIndex) {
+function movePiece(fromIndex, toIndex){
     clearOriginHighlights();
-    //Add a copy of the stat
-    gameStateStack.push(copyGameState(gameState));
-    // Update the board state array
-
-    gameState.check= false;
-    gameState.checkingSquares = [];
-    const piece = gameState.board[fromIndex];
-    const fromColor = pieceColor(piece);
-    const takenPiece = gameState.board[toIndex];
-    const fromType = piece & 0b111;
-    if(piece === (pieceBitRep.white | pieceBitRep.king)){
-        gameState.castlingWhite["king"] = false;
-        gameState.castlingWhite["queen"] = false;
-    }else if(piece === (pieceBitRep.black | pieceBitRep.king)){
-        gameState.castlingBlack["king"] = false;
-        gameState.castlingBlack["queen"] = false;
-    }
-    if(piece === (pieceBitRep.white | pieceBitRep.rook)){
-        if(fromIndex === 0){
-            gameState.castlingWhite["queen"] = false;
-        }else if(fromIndex === 7){
-            gameState.castlingWhite["king"] = false;
+    const moveMessage = {
+        message_type: "GameMove",
+        data: {
+            game_id: gameState.id,
+            fromIndex: fromIndex,
+            toIndex: toIndex,
         }
     }
-    if(piece === (pieceBitRep.black | pieceBitRep.rook)){
-        if(fromIndex === 112){
-            gameState.castlingBlack["queen"] = false;
-        }else if(fromIndex === 119){
-            gameState.castlingBlack["king"] = false;
-        }
-    }
-    let rookPosition = null;
-    if(fromType === pieceBitRep.king && (Math.abs(toIndex - fromIndex) == 2)){
-        if(toIndex === 2){
-            gameState.board[0] = 0;
-            gameState.board[3] = pieceBitRep.white | pieceBitRep.rook;
-            // const rookFromCell = document.getElementById(`cell-0`);
-            // const rookToCell = document.getElementById(`cell-3`);
-            // while (rookToCell.firstChild) {
-            //     rookToCell.removeChild(rookToCell.firstChild);
-            // }
-            // if (rookFromCell.firstChild) {
-            //     rookToCell.appendChild(rookFromCell.firstChild);
-            // }
-            updateAttackTable(gameState, 3);
-            updateAttackTable(gameState, 0);
-            rookPosition = 3;
-
-        }else if(toIndex === 6){
-            gameState.board[7] = 0;
-            gameState.board[5] = pieceBitRep.white | pieceBitRep.rook;
-            // const rookFromCell = document.getElementById(`cell-7`);
-            // const rookToCell = document.getElementById(`cell-5`);
-            // while (rookToCell.firstChild) {
-            //     rookToCell.removeChild(rookToCell.firstChild);
-            // }
-            // if (rookFromCell.firstChild) {
-            //     rookToCell.appendChild(rookFromCell.firstChild);
-            // }
-            updateAttackTable(gameState, 5);
-            updateAttackTable(gameState, 7);
-            rookPosition = 5;
-
-        }else if(toIndex === 114){
-            gameState.board[112] = 0;
-            gameState.board[115] = pieceBitRep.black | pieceBitRep.rook;
-            // const rookFromCell = document.getElementById(`cell-112`);
-            // const rookToCell = document.getElementById(`cell-115`);
-            // while (rookToCell.firstChild) {
-            //     rookToCell.removeChild(rookToCell.firstChild);
-            // }
-            // if (rookFromCell.firstChild) {
-            //     rookToCell.appendChild(rookFromCell.firstChild);
-            // }
-            updateAttackTable(gameState, 115);
-            updateAttackTable(gameState, 116);
-            rookPosition = 115;
-
-
-        }else if(toIndex === 118){
-            gameState.board[119] = 0;
-            gameState.board[117] = pieceBitRep.black | pieceBitRep.rook;
-            // const rookFromCell = document.getElementById(`cell-119`);
-            // const rookToCell = document.getElementById(`cell-117`);
-            // while (rookToCell.firstChild) {
-            //     rookToCell.removeChild(rookToCell.firstChild);
-            // }
-            // if (rookFromCell.firstChild) {
-            //     rookToCell.appendChild(rookFromCell.firstChild);
-            // }
-            updateAttackTable(gameState, 118);
-            updateAttackTable(gameState, 119);
-            rookPosition = 118;
-
-        }
-    }
-    let potentialCapturedPiece = gameState.board[toIndex];
-    gameState.board[toIndex] = piece;
-    gameState.board[fromIndex] = 0;
-
-
-    // const fromCell = document.getElementById(`cell-${fromIndex}`);
-    // const toCell = document.getElementById(`cell-${toIndex}`);
-    
-    // if (!toCell) {
-    //     console.error(`No element found with the ID: cell-${toIndex}`);
-    //     return;
-    // }
-    // If there's a piece on the target cell (toCell), remove it (capture).
-    // while (toCell.firstChild) {
-    //     //Adds captured piece to capture box
-    //     updateCapturedPiecesDisplay(potentialCapturedPiece);
-    //     toCell.removeChild(toCell.firstChild);
-    // }
-    //add highlight for origin cell
-    // toCell.classList.add('.to-highlight');
-    // fromCell.classList.add('.origin-highlight');
-    // // Move the piece from the source cell (fromCell) to the target cell (toCell).
-    // if (fromCell.firstChild) {
-    //     toCell.appendChild(fromCell.firstChild);
-        
-    // }
-
-    if(piece === (pieceBitRep.white | pieceBitRep.king)){
-        gameState.whiteKingPos = toIndex;
-    }else if(piece === (pieceBitRep.black | pieceBitRep.king)){
-        gameState.blackKingPos = toIndex;
-    }
-    var capturedPawnIndex = null;
-    // Check for en passant
-    if (toIndex === gameState.enpassant && (piece == (pieceBitRep.white | pieceBitRep.pawn) || piece == (pieceBitRep.black | pieceBitRep.pawn))) {
-        
-        if (piece === (pieceBitRep.white | pieceBitRep.pawn)) {
-            capturedPawnIndex = toIndex - 16;
-        }
-        else if (piece === (pieceBitRep.black | pieceBitRep.pawn)) {
-            capturedPawnIndex = toIndex + 16;
-        }
-        // const epCell = document.getElementById(`cell-${capturedPawnIndex}`);
-        // while (epCell.firstChild) {
-        //     //Adds captured piece to capture box
-        //     updateCapturedPiecesDisplay(gameState.board[capturedPawnIndex]);
-        //     epCell.removeChild(epCell.firstChild);
-        // }
-        gameState.board[capturedPawnIndex] = 0;
-    }
-
-    
-    //Calculates the En Passant Square if a pawn has moved twice
-    if ((piece === (pieceBitRep.white | pieceBitRep.pawn)) || (piece === (pieceBitRep.black | pieceBitRep.pawn))) {
-        if (Math.abs(fromIndex - toIndex) === 32) { // Moved 2 squares
-            // Compute and store the en passant square
-            gameState.enpassant = (fromIndex + toIndex) / 2;
-        } else {
-            gameState.enpassant = null;
-        }
-    } else {
-        gameState.enpassant = null;
-    }
-    pawnToQueen(toIndex, false);
-    //Update boardstate
-
-    gameState.lastMove = [fromIndex, toIndex, piece, takenPiece];
-    gameState.moveHistory.push([fromIndex, toIndex]);
-    //Check logic
-    clearPinnedPieces(gameState);
-    pinSearch(gameState, gameState.whiteKingPos);
-    pinSearch(gameState, gameState.blackKingPos);
-    updateAttackTable(gameState, toIndex);
-    updateAttackTable(gameState, fromIndex);
-    if(capturedPawnIndex !== null){
-        updateAttackTable(gameState, capturedPawnIndex);
-    }
-    for(let i = 0; i < 64; i++){
-        if(gameState.blackAttackTable[i].includes(toIndex)){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if(gameState.blackAttackTable[i].includes(fromIndex)){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if((capturedPawnIndex !== null) && (gameState.blackAttackTable[i].includes(capturedPawnIndex))){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if((rookPosition !== null) && (gameState.blackAttackTable[i].includes(rookPosition))){
-            updateAttackTable(gameState, toHexIndex(i));
-        }
-        if(gameState.whiteAttackTable[i].includes(toIndex)){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if(gameState.whiteAttackTable[i].includes(fromIndex)){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if((capturedPawnIndex !== null) && (gameState.whiteAttackTable[i].includes(capturedPawnIndex))){
-            updateAttackTable(gameState, toHexIndex(i));
-        }else if((rookPosition !== null) && (gameState.whiteAttackTable[i].includes(rookPosition))){
-            updateAttackTable(gameState, toHexIndex(i));
-        }
-    }
-    gameState.positionHistory.push(computeHash(gameState));
-    // runAttackTable(gameState);
-    if(gameState.turn == 0){
-        
-        if(isSquareUnderAttack(gameState, gameState.blackKingPos, pieceBitRep.white) == true){
-            gameState.check = true;
-            
-            // const kingCell = document.getElementById(`cell-${gameState.blackKingPos}`);
-            // kingCell.classList.add('blinking');
-            // console.log("Black King in check")
-            if(isCheckmate(gameState) == true){
-                console.log("checkmate");
-            }
-        }else{
-            if(isStalemate(gameState) == true){
-                console.log("stalemate");
-            }
-            gameState.check= false;
-            gameState.checkingSquares = [];
-        }
-        gameState.turn = 1;
-    }else{
-        if(isSquareUnderAttack(gameState, gameState.whiteKingPos, pieceBitRep.black) == true){
-            gameState.check = true;
-            
-            // console.log("White King in check")
-            // const kingCell = document.getElementById(`cell-${gameState.whiteKingPos}`);
-            // kingCell.classList.add('blinking');
-            if(isCheckmate(gameState)){
-                console.log("Checkmate")
-            }
-        }else{
-            if(isStalemate(gameState)){
-                console.log("Stalemate");
-            }
-            gameState.check = false;
-            gameState.checkingSquares = [];
-        }  
-        gameState.turn = 0;
-    }
-    //Starts or swaps the timer when a piece is moved
-    // startTimer();
-    // //Adds Time Increments if turned on
-    // if (gameState.timeIncrementOn === true) {
-    //     addIncrementTime();
-    //     updateDisplay();
-    // }
-
-}
-function restorePreviousGameState(depth = 1){
-    if(gameStateStack.length === 0){
-        return null;
-    }
-    for(let i = 0; i< depth; i++){
-        gameState = gameStateStack.pop();
-    }
-
-    
-    // Logic to revert the gameState to the previous state...
-    // updateDom();
-    // After reverting the gameState, now update the DOM
-    return gameState;
+    ws.send(JSON.stringify(moveMessage));
+    return;
 }
 
 /*
 Please familiarize yourself with how FEN works before reading this function
 https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
 */
-function loadFEN(fen) {
-    //Start at the top left corner of the board
-    // console.log("I made it here");
-    var row = 7;
-    var column = 0;
-    //Squares is different from the 2d board that we may use later
-    //Squares is a 1d array that represents the board in a linear fashion
+// function loadFEN(fen) {
+//     //Start at the top left corner of the board
+//     // console.log("I made it here");
+//     var row = 7;
+//     var column = 0;
+//     //Squares is different from the 2d board that we may use later
+//     //Squares is a 1d array that represents the board in a linear fashion
     
-    //Starting fen: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-    //Clear board: 8/8/8/8/8/8/8/8 w - - 0 1
-    //For populating the board, the only thing we care about is the first part of the FEN string
-    // gameState[9] = new ulongInt(gameState, 0);
-    // gameState[10] = new ulongInt(gameState, 0);
-    // gameState[11] = new ulongInt(gameState, 0);
-    // gameState[12] = new ulongInt(gameState, 0);
-    // gameState[13] = new ulongInt(gameState, 0);
-    // gameState[14] = new ulongInt(gameState, 0);
-    // gameState[17] = new ulongInt(gameState, 0);
-    // gameState[18] = new ulongInt(gameState, 0);
-    // gameState[19] = new ulongInt(gameState, 0);
-    // gameState[20] = new ulongInt(gameState, 0);
-    // gameState[21] = new ulongInt(gameState, 0);
-    // gameState[22] = new ulongInt(gameState, 0);
+//     //Starting fen: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+//     //Clear board: 8/8/8/8/8/8/8/8 w - - 0 1
+//     //For populating the board, the only thing we care about is the first part of the FEN string
+//     // gameState[9] = new ulongInt(gameState, 0);
+//     // gameState[10] = new ulongInt(gameState, 0);
+//     // gameState[11] = new ulongInt(gameState, 0);
+//     // gameState[12] = new ulongInt(gameState, 0);
+//     // gameState[13] = new ulongInt(gameState, 0);
+//     // gameState[14] = new ulongInt(gameState, 0);
+//     // gameState[17] = new ulongInt(gameState, 0);
+//     // gameState[18] = new ulongInt(gameState, 0);
+//     // gameState[19] = new ulongInt(gameState, 0);
+//     // gameState[20] = new ulongInt(gameState, 0);
+//     // gameState[21] = new ulongInt(gameState, 0);
+//     // gameState[22] = new ulongInt(gameState, 0);
 
-    var components = fen.split(" ");
-    var boardfen = components[0];
-    var turn = components[1];
-    var castling = components[2];
-    var enpassant = components[3];
-    var halfmove = components[4];
-    var fullmove = components[5];
-    var slashCount = 0;
-    //TODO: This section needs error handling
-    // console.log(boardfen);
-    // console.log(boardfen.length);
-    for (let i = 0; i < boardfen.length; i++) {
-        // console.log(i);
-        let position = row * 16 + column;
-        if(column > 8){
-            alert("Invalid FEN, slash omitted when expected")
-            return null;
-        }
-        let c = boardfen[i]; //apparently using let here is preferred?
-        // console.log(c);
-        //In FEN a / indicates we move down a row, thus we decrement rank and set the file back to 0
-        if (c === '/') {
-            slashCount++;
-            row--;
-            column = 0;
-        }else{ //why tf is this the way you check if a char is a number in js?
-            if(position < 0 || position > 119){
-                break;
-            }
-            if (c >= '0' && c <= '9'){
-                //
-                for(let j = 0; j < parseInt(c); j++){
-                    // console.log("Position: ", position)
-                    gameState.board[position] = 0;
-                    // console.log("Piece: ", pieceMapping[gameState.board[position]])
-                    const cell = document.getElementById(`cell-${position}`);
-                    while (cell.firstChild) {
-                        cell.removeChild(cell.firstChild);
-                    }
-                    position++;
-                    column++;
-                }
-            } else{
-                if(c === 'k'){
-                    gameState.blackKingPos = position;
-                }else if(c === 'K'){
-                    gameState.whiteKingPos = position;
-                }
+//     var components = fen.split(" ");
+//     var boardfen = components[0];
+//     var turn = components[1];
+//     var castling = components[2];
+//     var enpassant = components[3];
+//     var halfmove = components[4];
+//     var fullmove = components[5];
+//     var slashCount = 0;
+//     //TODO: This section needs error handling
+//     // console.log(boardfen);
+//     // console.log(boardfen.length);
+//     for (let i = 0; i < boardfen.length; i++) {
+//         // console.log(i);
+//         let position = row * 16 + column;
+//         if(column > 8){
+//             alert("Invalid FEN, slash omitted when expected")
+//             return null;
+//         }
+//         let c = boardfen[i]; //apparently using let here is preferred?
+//         // console.log(c);
+//         //In FEN a / indicates we move down a row, thus we decrement rank and set the file back to 0
+//         if (c === '/') {
+//             slashCount++;
+//             row--;
+//             column = 0;
+//         }else{ //why tf is this the way you check if a char is a number in js?
+//             if(position < 0 || position > 119){
+//                 break;
+//             }
+//             if (c >= '0' && c <= '9'){
+//                 //
+//                 for(let j = 0; j < parseInt(c); j++){
+//                     // console.log("Position: ", position)
+//                     gameState.board[position] = 0;
+//                     // console.log("Piece: ", pieceMapping[gameState.board[position]])
+//                     const cell = document.getElementById(`cell-${position}`);
+//                     while (cell.firstChild) {
+//                         cell.removeChild(cell.firstChild);
+//                     }
+//                     position++;
+//                     column++;
+//                 }
+//             } else{
+//                 if(c === 'k'){
+//                     gameState.blackKingPos = position;
+//                 }else if(c === 'K'){
+//                     gameState.whiteKingPos = position;
+//                 }
                 
-                let piece = fenMapping[c];
-                gameState.board[position] = fenMapping[c];
+//                 let piece = fenMapping[c];
+//                 gameState.board[position] = fenMapping[c];
 
-                // Update the DOM
-                const cell = document.getElementById(`cell-${position}`);
+//                 // Update the DOM
+//                 const cell = document.getElementById(`cell-${position}`);
                 
-                // If there's a piece on the cell, remove it.
-                while (cell.firstChild) {
-                    cell.removeChild(cell.firstChild);
-                }
+//                 // If there's a piece on the cell, remove it.
+//                 while (cell.firstChild) {
+//                     cell.removeChild(cell.firstChild);
+//                 }
 
-                // Create a new child element for the piece and append it to the cell.
-                let img = document.createElement('img');
-                img.src = svgPaths[piece];
-                cell.appendChild(img);
-                position++;
-                column++;
-            }
-        }
-    }
-    // console.log(slashCount);
-    if(slashCount != 7){
-        alert("Invalid FEN, slash count wrong")
-        return null;
-    }
-    // console.log(turn);
-    if(!(turn === 'w' || turn === 'b')){
-        alert("Invalid turn")
-        return null;
-    }
-    let turnNum = turn === 'w' ? 0 : 1;
-    gameState.turn = turnNum;
-    gameState.castlingWhite["king"] = false;
-    gameState.castlingWhite["queen"] = false;
-    gameState.castlingBlack["king"] = false;
-    gameState.castlingBlack["queen"] = false;
+//                 // Create a new child element for the piece and append it to the cell.
+//                 let img = document.createElement('img');
+//                 img.src = svgPaths[piece];
+//                 cell.appendChild(img);
+//                 position++;
+//                 column++;
+//             }
+//         }
+//     }
+//     // console.log(slashCount);
+//     if(slashCount != 7){
+//         alert("Invalid FEN, slash count wrong")
+//         return null;
+//     }
+//     // console.log(turn);
+//     if(!(turn === 'w' || turn === 'b')){
+//         alert("Invalid turn")
+//         return null;
+//     }
+//     let turnNum = turn === 'w' ? 0 : 1;
+//     gameState.turn = turnNum;
+//     gameState.castlingWhite["king"] = false;
+//     gameState.castlingWhite["queen"] = false;
+//     gameState.castlingBlack["king"] = false;
+//     gameState.castlingBlack["queen"] = false;
 
-    for(let i = 0; i<castling.length; i++){
-        let c = castling.charAt(i);
-        if(c === 'K'){
-            gameState.castlingWhite["king"] = true;
-        }else if(c === 'Q'){
-            gameState.castlingWhite["queen"] = true;
-        }else if(c === 'k'){
-            gameState.castlingBlack["king"] = true;
-        }else if(c === 'q'){
-            gameState.castlingBlack["queen"] = true;
-        }
-    }
-    if(enpassant === '-'){
-        gameState.enpassant = null;
-    }else{
-        var col = notationMapping[enpassant.charAt(0)];
-        var row = notationMapping[parseInt(enpassant.charAt(1))];
-        gameState.enpassant = row * 16 + col;
-    }
-    gameState.halfMoveClock = parseInt(halfmove);
-    gameState.fullMoveNumber = parseInt(fullmove);
-    runAttackTable(gameState);
-    if(isSquareUnderAttack(gameState, gameState.whiteKingPos, pieceBitRep.black) == true){
-        gameState.check = true;
-    }else if(isSquareUnderAttack(gameState, gameState.blackKingPos, pieceBitRep.white) == true){
-        gameState.check = true;
-    }
-    pinSearch(gameState, gameState.whiteKingPos);
-    pinSearch(gameState, gameState.blackKingPos);
-    console.log(gameState.board);
-}
+//     for(let i = 0; i<castling.length; i++){
+//         let c = castling.charAt(i);
+//         if(c === 'K'){
+//             gameState.castlingWhite["king"] = true;
+//         }else if(c === 'Q'){
+//             gameState.castlingWhite["queen"] = true;
+//         }else if(c === 'k'){
+//             gameState.castlingBlack["king"] = true;
+//         }else if(c === 'q'){
+//             gameState.castlingBlack["queen"] = true;
+//         }
+//     }
+//     if(enpassant === '-'){
+//         gameState.enpassant = null;
+//     }else{
+//         var col = notationMapping[enpassant.charAt(0)];
+//         var row = notationMapping[parseInt(enpassant.charAt(1))];
+//         gameState.enpassant = row * 16 + col;
+//     }
+//     gameState.halfMoveClock = parseInt(halfmove);
+//     gameState.fullMoveNumber = parseInt(fullmove);
+//     runAttackTable(gameState);
+//     if(isSquareUnderAttack(gameState, gameState.whiteKingPos, pieceBitRep.black) == true){
+//         gameState.check = true;
+//     }else if(isSquareUnderAttack(gameState, gameState.blackKingPos, pieceBitRep.white) == true){
+//         gameState.check = true;
+//     }
+//     pinSearch(gameState, gameState.whiteKingPos);
+//     pinSearch(gameState, gameState.blackKingPos);
+//     console.log(gameState.board);
+// }
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
+// function sleep(ms) {
+//     return new Promise(resolve => setTimeout(resolve, ms));
+//   }
   
 
 
-async function loseChessGame() {
-    loseSound();
-    //await sleep(3500);
-    // First AJAX request to get_token.php to fetch the username
-    var xhrToken = new XMLHttpRequest();
-    xhrToken.open('GET', 'get_token.php', true);
+// async function loseChessGame() {
+//     loseSound();
+//     //await sleep(3500);
+//     // First AJAX request to get_token.php to fetch the username
+//     var xhrToken = new XMLHttpRequest();
+//     xhrToken.open('GET', 'get_token.php', true);
 
-    xhrToken.onload = function () {
-        if (xhrToken.status >= 200 && xhrToken.status < 300) {
-            var response = JSON.parse(xhrToken.responseText);
-            if (response.status === 'valid') {
-                var username = encodeURIComponent(response.username);
+//     xhrToken.onload = function () {
+//         if (xhrToken.status >= 200 && xhrToken.status < 300) {
+//             var response = JSON.parse(xhrToken.responseText);
+//             if (response.status === 'valid') {
+//                 var username = encodeURIComponent(response.username);
 
-                // Second AJAX request to lose.php to update stats
-                var xhrLose = new XMLHttpRequest();
-                xhrLose.open('GET', 'lose.php', true);
+//                 // Second AJAX request to lose.php to update stats
+//                 var xhrLose = new XMLHttpRequest();
+//                 xhrLose.open('GET', 'lose.php', true);
 
-                xhrLose.onload = function () {
-                    if (xhrLose.status >= 200 && xhrLose.status < 300) {
-                        console.log('lose.php executed successfully');
-                    } else {
-                        console.log('Request to lose.php failed with status: ' + xhrLose.status);
-                    }
-                    // Redirect to the user dashboard with username in URL, regardless of lose.php success
-                    //window.location.href = '../userDashboard?username=' + username;
-                };
+//                 xhrLose.onload = function () {
+//                     if (xhrLose.status >= 200 && xhrLose.status < 300) {
+//                         console.log('lose.php executed successfully');
+//                     } else {
+//                         console.log('Request to lose.php failed with status: ' + xhrLose.status);
+//                     }
+//                     // Redirect to the user dashboard with username in URL, regardless of lose.php success
+//                     //window.location.href = '../userDashboard?username=' + username;
+//                 };
 
-                xhrLose.onerror = function () {
-                    console.log('There was an error with the request to lose.php');
-                    // Redirect to the user dashboard with username in URL, even on error
-                    //window.location.href = '../userDashboard?username=' + username;
-                };
+//                 xhrLose.onerror = function () {
+//                     console.log('There was an error with the request to lose.php');
+//                     // Redirect to the user dashboard with username in URL, even on error
+//                     //window.location.href = '../userDashboard?username=' + username;
+//                 };
 
-                xhrLose.send();
-            } else {
-                console.log('Invalid token or no user found.');
-                //window.location.href = '../userDashboard';
-            }
-        } else {
-            console.log('Request to get_token.php failed with status: ' + xhrToken.status);
-            //window.location.href = '../userDashboard';
+//                 xhrLose.send();
+//             } else {
+//                 console.log('Invalid token or no user found.');
+//                 //window.location.href = '../userDashboard';
+//             }
+//         } else {
+//             console.log('Request to get_token.php failed with status: ' + xhrToken.status);
+//             //window.location.href = '../userDashboard';
+//         }
+//     };
+
+//     xhrToken.onerror = function () {
+//         console.log('There was an error with the request to get_token.php');
+//         //window.location.href = '../userDashboard';
+//     };
+
+//     xhrToken.send();
+//   }
+
+//   async function winChessGame() {
+//     // Perform an AJAX request to win.php
+//     winSound();
+//     //await sleep(4000);
+//     var xhrToken = new XMLHttpRequest();
+//     xhrToken.open('GET', 'get_token.php', true);
+
+//     xhrToken.onload = function () {
+//         if (xhrToken.status >= 200 && xhrToken.status < 300) {
+//             var response = JSON.parse(xhrToken.responseText);
+//             if (response.status === 'valid') {
+//                 var username = encodeURIComponent(response.username);
+
+//                 // Second AJAX request to win.php to update stats
+//                 var xhrLose = new XMLHttpRequest();
+//                 xhrLose.open('GET', 'win.php', true);
+
+//                 xhrLose.onload = function () {
+//                     if (xhrLose.status >= 200 && xhrLose.status < 300) {
+//                         console.log('win.php executed successfully');
+//                     } else {
+//                         console.log('Request to win.php failed with status: ' + xhrLose.status);
+//                     }
+//                     // Redirect to the user dashboard with username in URL, regardless of win.php success
+//                     //window.location.href = '../userDashboard?username=' + username;
+//                 };
+
+//                 xhrLose.onerror = function () {
+//                     console.log('There was an error with the request to win.php');
+//                     // Redirect to the user dashboard with username in URL, even on error
+//                     //window.location.href = '../userDashboard?username=' + username;
+//                 };
+
+//                 xhrLose.send();
+//             } else {
+//                 console.log('Invalid token or no user found.');
+//                 //window.location.href = '../userDashboard';
+//             }
+//         } else {
+//             console.log('Request to get_token.php failed with status: ' + xhrToken.status);
+//             //window.location.href = '../userDashboard';
+//         }
+//     };
+
+//     xhrToken.onerror = function () {
+//         console.log('There was an error with the request to get_token.php');
+//         //window.location.href = '../userDashboard';
+//     };
+
+//     xhrToken.send();
+//   }
+const pieceMapping = {
+    0 : "Empty",
+    9 :" White king",
+    10 : "White pawn",
+    11 : "White knight",
+    12 : "White bishop",
+    13 : "White rook",
+    14 : "White queen",
+    17 : "Black king",
+    18 : "Black pawn",
+    19 : "Black knight",
+    20 : "Black bishop",
+    21 : "Black rook",
+    22 : "Black queen",
+
+}
+
+const pieceToLetter = {
+    1 : "K",
+    2 : "",
+    3 : "N",
+    4 : "B",
+    5 : "R",
+    6 : "Q",
+}
+const letterToPiece = {
+    "K" : 1,
+    "N" : 3,
+    "B" : 4,
+    "R" : 5,
+    "Q" : 6,
+}
+
+const fenMapping = {
+    "r" : pieceBitRep.black | pieceBitRep.rook,
+    "n" : pieceBitRep.black | pieceBitRep.knight,
+    "b" : pieceBitRep.black | pieceBitRep.bishop,
+    "q" : pieceBitRep.black | pieceBitRep.queen,
+    "k" : pieceBitRep.black | pieceBitRep.king,
+    "p" : pieceBitRep.black | pieceBitRep.pawn,
+    "R" : pieceBitRep.white | pieceBitRep.rook,
+    "N" : pieceBitRep.white | pieceBitRep.knight,
+    "B" : pieceBitRep.white | pieceBitRep.bishop,
+    "Q" : pieceBitRep.white | pieceBitRep.queen,
+    "K" : pieceBitRep.white | pieceBitRep.king,
+    "P" : pieceBitRep.white | pieceBitRep.pawn, 
+}
+
+function isWhite(piece) {
+    return (piece & pieceBitRep.white) === pieceBitRep.white;
+}
+
+function isBlack(piece) {
+    return (piece & pieceBitRep.black) === pieceBitRep.black;
+}
+
+function pieceColor(piece) {
+    if (isWhite(piece)==true) return pieceBitRep.white;
+    if (isBlack(piece)==true) return pieceBitRep.black;
+    return null;  // This is for cases where the piece might be "none".
+}
+function isRookOrQueen(piece){
+    if(piece === (pieceBitRep.rook | pieceBitRep.black) || piece === (pieceBitRep.rook | pieceBitRep.white) || piece === (pieceBitRep.queen | pieceBitRep.black) || piece === (pieceBitRep.queen | pieceBitRep.white)){
+        return true;
+    }
+    return false;
+}
+function isBishopOrQueen(piece){
+    if(piece === (pieceBitRep.bishop | pieceBitRep.black) || piece === (pieceBitRep.bishop | pieceBitRep.white) || piece === (pieceBitRep.queen | pieceBitRep.black) || piece === (pieceBitRep.queen | pieceBitRep.white)){
+        return true;
+    }
+    return false;
+}
+function isSlider(piece){
+    if(isRookOrQueen(piece) || isBishopOrQueen(piece)){
+        return true;
+    }
+    return false;
+}
+
+function copyGameState(gameState) {
+    return JSON.parse(JSON.stringify(gameState));
+}
+function updateDom(){
+    for (let i = 0; i < 64; i++) {
+        const cell = document.getElementById(`cell-${i}`);
+        const piece = gameState.board[i];
+
+        // Clear the current cell
+        while (cell.firstChild) {
+            cell.removeChild(cell.firstChild);
         }
-    };
 
-    xhrToken.onerror = function () {
-        console.log('There was an error with the request to get_token.php');
-        //window.location.href = '../userDashboard';
-    };
-
-    xhrToken.send();
-  }
-
-  async function winChessGame() {
-    // Perform an AJAX request to win.php
-    winSound();
-    //await sleep(4000);
-    var xhrToken = new XMLHttpRequest();
-    xhrToken.open('GET', 'get_token.php', true);
-
-    xhrToken.onload = function () {
-        if (xhrToken.status >= 200 && xhrToken.status < 300) {
-            var response = JSON.parse(xhrToken.responseText);
-            if (response.status === 'valid') {
-                var username = encodeURIComponent(response.username);
-
-                // Second AJAX request to win.php to update stats
-                var xhrLose = new XMLHttpRequest();
-                xhrLose.open('GET', 'win.php', true);
-
-                xhrLose.onload = function () {
-                    if (xhrLose.status >= 200 && xhrLose.status < 300) {
-                        console.log('win.php executed successfully');
-                    } else {
-                        console.log('Request to win.php failed with status: ' + xhrLose.status);
-                    }
-                    // Redirect to the user dashboard with username in URL, regardless of win.php success
-                    //window.location.href = '../userDashboard?username=' + username;
-                };
-
-                xhrLose.onerror = function () {
-                    console.log('There was an error with the request to win.php');
-                    // Redirect to the user dashboard with username in URL, even on error
-                    //window.location.href = '../userDashboard?username=' + username;
-                };
-
-                xhrLose.send();
-            } else {
-                console.log('Invalid token or no user found.');
-                //window.location.href = '../userDashboard';
-            }
-        } else {
-            console.log('Request to get_token.php failed with status: ' + xhrToken.status);
-            //window.location.href = '../userDashboard';
+        // If there is a piece in the current game state cell, create an element for it
+        if (piece !== 0) {
+            const img = document.createElement('img');
+            img.src = svgPaths[piece];
+            cell.appendChild(img)
         }
-    };
+    }
+}
+function pieceType(piece){
+    return piece & 0b111;
+}
 
-    xhrToken.onerror = function () {
-        console.log('There was an error with the request to get_token.php');
-        //window.location.href = '../userDashboard';
-    };
+function flipBoard() {
+    const chessBoard = document.getElementById("chessBoard");
+    let cells = Array.from(chessBoard.children);
+    cells.reverse();
 
-    xhrToken.send();
-  }
+    // Clear the current board
+    while (chessBoard.firstChild) {
+        chessBoard.removeChild(chessBoard.firstChild);
+    }
 
-  async function drawChessGame() {
-    //await sleep(3500);
-    // Perform an AJAX request to draw.php
-    var xhrToken = new XMLHttpRequest();
-    xhrToken.open('GET', 'get_token.php', true);
+    // Append the cells in reversed order
+    cells.forEach(cell => {
+        chessBoard.appendChild(cell);
+    });
+}
 
-    xhrToken.onload = function () {
-        if (xhrToken.status >= 200 && xhrToken.status < 300) {
-            var response = JSON.parse(xhrToken.responseText);
-            if (response.status === 'valid') {
-                var username = encodeURIComponent(response.username);
+//This does the modal:
+function showWinModal() {
+    var win = document.getElementById("win-modal-container");
+    win.style.display = 'block';
+    win.innerHTML = '<div class="modal-content" id="modal-content"><h2>CHECKMATE!</h2><p>You win! Congratulations!</p><button onclick="closeWindow()">Back to Dashboard</button></div>'
+    var c = document.getElementById("modal-content");
+    c.style.display ='block';
+}
+function showLossModal() {
+    var lose = document.getElementById("lose-modal-container");
+    lose.style.display = 'block';
+    lose.innerHTML = '<div class="modal-content" id="modal-content"><h2>CHECKMATED!</h2><p>You lose! Better luck next time!</p><button onclick="closeWindow()">Back to Dashboard</button></div>'
+    var c = document.getElementById("modal-content");
+    c.style.display ='block';
+}
+function showDrawModal() {
+    var draw = document.getElementById("draw-modal-container");
+    draw.style.display = 'block';
+    draw.innerHTML = '<div class="modal-content" id="modal-content"><h2>STALEMATE!</h2><p>Draw game! No winners here!</p><button onclick="closeWindow()">Back to Dashboard</button></div>'
+    var c = document.getElementById("modal-content");
+    c.style.display ='block';
+}
 
-                // Second AJAX request to draw.php to update stats
-                var xhrLose = new XMLHttpRequest();
-                xhrLose.open('GET', 'draw.php', true);
-
-                xhrLose.onload = function () {
-                    if (xhrLose.status >= 200 && xhrLose.status < 300) {
-                        console.log('draw.php executed successfully');
-                    } else {
-                        console.log('Request to draw.php failed with status: ' + xhrLose.status);
-                    }
-                    // Redirect to the user dashboard with username in URL, regardless of draw.php success
-                    //window.location.href = '../userDashboard?username=' + username;
-                };
-
-                xhrLose.onerror = function () {
-                    console.log('There was an error with the request to draw.php');
-                    // Redirect to the user dashboard with username in URL, even on error
-                    //window.location.href = '../userDashboard?username=' + username;
-                };
-
-                xhrLose.send();
-            } else {
-                console.log('Invalid token or no user found.');
-                //window.location.href = '../userDashboard';
-            }
-        } else {
-            console.log('Request to get_token.php failed with status: ' + xhrToken.status);
-            //window.location.href = '../userDashboard';
-        }
-    };
-
-    xhrToken.onerror = function () {
-        console.log('There was an error with the request to get_token.php');
-        //window.location.href = '../userDashboard';
-    };
-
-    xhrToken.send();
+function closeWindow() {
+    window.history.back();
 }
   

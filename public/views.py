@@ -12,7 +12,10 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.http import HttpResponse
-
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.urls import reverse
 from .models import AuthToken
 
 class CustomLoginView(LoginView):
@@ -40,6 +43,7 @@ def custom_login(request):
             return response
 
     return render(request, 'index.html', {'show_login_modal': True})
+
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -74,3 +78,49 @@ def user_dashboard(request):
 def custom_logout(request):
     logout(request)
     return redirect('public/index.html')
+
+def pvp(request, game_id):
+    print("pvp request", request)
+    gameState = request.session.get('gameState')
+    context = {'gameState': gameState}
+    print("made it here")
+    return render(request, 'public/board.html', context)
+
+def logout(request):
+    response = HttpResponseRedirect('/')
+    response.delete_cookie('auth_token')
+    return response
+def pve(request, game_id):
+    print("pve request", request)
+    gameState = request.session.get('gameState')
+    context = {'gameState': gameState}
+    return render(request, 'public/board.html', context)
+
+@require_POST
+def mp_session_setup(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        gameState = data.get('gameState')
+        game_id = data.get('game_id')
+
+        request.session['gameState'] = gameState
+        request.session['game_id'] = game_id
+
+        print("this is the reversed url", reverse('game', kwargs={'game_id': game_id}))
+        return redirect(reverse('pvp_game', kwargs={'game_id': game_id}))
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+@require_POST
+def pve_session_setup(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        gameState = data.get('gameState')
+        game_id = data.get('game_id')
+
+        request.session['gameState'] = gameState
+        request.session['game_id'] = game_id
+
+        print("this is the reversed url", reverse('game', kwargs={'game_id': game_id}))
+        return redirect(reverse('engine', kwargs={'game_id': game_id}))
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
