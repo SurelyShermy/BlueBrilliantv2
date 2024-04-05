@@ -57,34 +57,34 @@ def register(request):
             print("made it to invalid password")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 # this should fix the stupid bug so not all te html is refresged
-                form_html = render_to_string('public/register_modal.html', {'form': form}, request=request)
+                form_html = render_to_string('register_modal.html', {'form': form}, request=request)
                 print(form_html)
                 return JsonResponse({"form_html": form_html})
             else:
-                return render(request, 'public/index.html', {'form': form, 'show_register_modal': True})
+                return render(request, 'index.html', {'form': form, 'show_register_modal': True})
     else:
         print("wasnt a post?")
         form = UserCreationForm()
-        return render(request, 'public/index.html', {'form': form})
+        return render(request, 'index.html', {'form': form})
 
 
 def index(request):
-    return render(request, 'public/index.html')
+    return render(request, 'index.html')
 
 @login_required
 def user_dashboard(request):
-    return render(request, 'public/dashboard.html')
+    return render(request, 'dashboard.html')
 
 def custom_logout(request):
     logout(request)
-    return redirect('public/index.html')
+    return redirect('index.html')
 
 def pvp(request, game_id):
     print("pvp request", request)
     gameState = request.session.get('gameState')
     context = {'gameState': gameState}
     print("made it here")
-    return render(request, 'public/board.html', context)
+    return render(request, 'board.html', context)
 
 def logout(request):
     response = HttpResponseRedirect('/')
@@ -94,7 +94,7 @@ def pve(request, game_id):
     print("pve request", request)
     gameState = request.session.get('gameState')
     context = {'gameState': gameState}
-    return render(request, 'public/board.html', context)
+    return render(request, 'board.html', context)
 
 @require_POST
 def mp_session_setup(request):
