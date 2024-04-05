@@ -3,3 +3,4 @@ env
 .exe
 target/
 debug/
+.json
