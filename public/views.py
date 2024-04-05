@@ -80,7 +80,6 @@ def custom_logout(request):
     return redirect('public/index.html')
 
 def pvp(request, game_id):
-    # Retrieve gameState from session
     print("pvp request", request)
     gameState = request.session.get('gameState')
     context = {'gameState': gameState}
@@ -91,6 +90,11 @@ def logout(request):
     response = HttpResponseRedirect('/')
     response.delete_cookie('auth_token')
     return response
+def pve(request, game_id):
+    print("pve request", request)
+    gameState = request.session.get('gameState')
+    context = {'gameState': gameState}
+    return render(request, 'public/board.html', context)
 
 @require_POST
 def mp_session_setup(request):
@@ -99,24 +103,24 @@ def mp_session_setup(request):
         gameState = data.get('gameState')
         game_id = data.get('game_id')
 
-        # Store the gameState and game_id in the session
         request.session['gameState'] = gameState
-        request.session['game_id'] = game_id  # Store game_id if needed
+        request.session['game_id'] = game_id
 
-        # Redirect to the 'pvp' view with the game_id
         print("this is the reversed url", reverse('game', kwargs={'game_id': game_id}))
-        return redirect(reverse('game', kwargs={'game_id': game_id}))
+        return redirect(reverse('pvp_game', kwargs={'game_id': game_id}))
 
-    # Handle other HTTP methods or error case
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+@require_POST
 def pve_session_setup(request):
-    game_id = request.GET.get('game_id')
-    player = request.GET.get('player')
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        gameState = data.get('gameState')
+        game_id = data.get('game_id')
 
-    if not game_id:
-        return JsonResponse({'error': 'Game ID is required'}, status=400)
-    request.session['game_id'] = game_id
-    request.session['game_mode'] = 'pve'
-    request.session['player'] = player
-    request.session['player_color'] = 'choose'
-    return JsonResponse({'success': True})
+        request.session['gameState'] = gameState
+        request.session['game_id'] = game_id
+
+        print("this is the reversed url", reverse('game', kwargs={'game_id': game_id}))
+        return redirect(reverse('engine', kwargs={'game_id': game_id}))
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})

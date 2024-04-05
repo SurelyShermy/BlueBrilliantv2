@@ -74,7 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     ws.onclose = () => {
         console.log("Disconnected from the game WebSocket");
-        // Optionally reconnect or handle disconnection
     };
     ws.onerror = (error) => {
         console.error("WebSocket error:", error);

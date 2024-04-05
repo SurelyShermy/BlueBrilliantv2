@@ -79,7 +79,7 @@
               // Send a POST request to the server to set up the game session
               fetch('mp_session_setup/', {  // Adjusted the endpoint
                   method: 'POST',
-                  credentials: 'include',  // Ensures cookies, including Django session cookie, are sent
+                  credentials: 'include',
                   headers: {
                       'Content-Type': 'application/json',
                       'X-CSRFToken': getCookie('csrftoken'),  // Ensure CSRF token is included
@@ -111,19 +111,37 @@
         checkMatchmaking();
     });
   document.getElementById('pve').addEventListener('click', function() {
-    fetch('http://localhost:4000/engine_game', {
+    const user_id = '{{ user.username }}';
+    fetch('http://localhost:4000/engine_game'+user_id, {
         method: 'POST',
-        // Include any needed headers, like for CSRF tokens or authentication
     })
     .then(response => response.json())
-    .then(game_id => {
-        // Redirect the user to the game page with the unique game ID
-        window.location.href = `{% url 'engine' %}?mode=engine&id=${game_id}`;
-    })
-    .catch(error => {
+    .then(data => {
+      const game_id = data.game_id;
+      fetch('pv_session_setup/', {
+        method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),  // Ensure CSRF token is included
+            },
+            body: JSON.stringify({ game_id: game_id, gameState: data.gameState })
+      })
+      .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;  // If there's a redirect, follow it
+        } else {
+            console.error('Expected a redirect but did not receive one.');
+        }
+      })
+      .catch(error => {
         console.error('Error starting new game:', error);
-    });
+      });
+  })
+  .catch(error => {
+        console.error('Error starting new game:', error);
   });
+});
   document.getElementById('logout-btn').addEventListener('click', function() {
     window.location.href = "{% url 'logout' %}";
   });

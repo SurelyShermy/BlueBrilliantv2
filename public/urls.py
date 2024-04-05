@@ -11,6 +11,6 @@ urlpatterns = [
     path('userdashboard/', user_dashboard, name='userdashboard'),
     path('logout/', LogoutView.as_view(next_page='index'), name='logout'),
     path('userdashboard/mp_session_setup/', mp_session_setup, name='mp_session_setup'),
-    path('pvp/<str:game_id>/', pvp, name='game'),
-    path('engine/', pve_session_setup, name='engine')
+    path('pvp/<str:game_id>/', pvp, name='pvp_game'),
+    path('engine/<str:game_id>/', pve_session_setup, name='engine')
 ]
