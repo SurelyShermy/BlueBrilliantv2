@@ -112,13 +112,13 @@
     });
   document.getElementById('pve').addEventListener('click', function() {
     const user_id = '{{ user.username }}';
-    fetch('http://localhost:4000/engine_game'+user_id, {
+    fetch('http://localhost:4000/engine_game/'+user_id, {
         method: 'POST',
     })
     .then(response => response.json())
     .then(data => {
       const game_id = data.game_id;
-      fetch('pv_session_setup/', {
+      fetch('pve_session_setup/', {
         method: 'POST',
             credentials: 'include',
             headers: {

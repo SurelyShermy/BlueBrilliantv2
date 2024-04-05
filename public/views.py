@@ -90,6 +90,7 @@ def logout(request):
     response = HttpResponseRedirect('/')
     response.delete_cookie('auth_token')
     return response
+
 def pve(request, game_id):
     print("pve request", request)
     gameState = request.session.get('gameState')
@@ -106,7 +107,7 @@ def mp_session_setup(request):
         request.session['gameState'] = gameState
         request.session['game_id'] = game_id
 
-        print("this is the reversed url", reverse('game', kwargs={'game_id': game_id}))
+        print("this is the reversed url", reverse('pvp_game', kwargs={'game_id': game_id}))
         return redirect(reverse('pvp_game', kwargs={'game_id': game_id}))
 
     return JsonResponse({'success': False, 'error': 'Invalid request'})
@@ -120,7 +121,7 @@ def pve_session_setup(request):
         request.session['gameState'] = gameState
         request.session['game_id'] = game_id
 
-        print("this is the reversed url", reverse('game', kwargs={'game_id': game_id}))
-        return redirect(reverse('engine', kwargs={'game_id': game_id}))
+        print("this is the reversed url", reverse('pve_game', kwargs={'game_id': game_id}))
+        return redirect(reverse('pve_game', kwargs={'game_id': game_id}))
 
     return JsonResponse({'success': False, 'error': 'Invalid request'})

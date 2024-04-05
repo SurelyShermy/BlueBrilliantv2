@@ -68,6 +68,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         else if(message.message_type == "GameState"){
             updateGameState(message);
+            if(gameState.engine === true){
+                if(gameState.turn === false && playing_white === true){
+                    requestEngineMove();
+                }else if(gameState.turn === true && playing_white === false){
+                    requestEngineMove();
+                }
+            }
         }
         
         // Update your game state based on the received data
@@ -592,7 +599,7 @@ function engine_move() {
 }
 function movePiece(fromIndex, toIndex){
     clearOriginHighlights();
-    const moveMessage = {
+    moveMessage = {
         message_type: "GameMove",
         data: {
             game_id: gameState.id,
@@ -603,7 +610,16 @@ function movePiece(fromIndex, toIndex){
     ws.send(JSON.stringify(moveMessage));
     return;
 }
-
+function requestEngineMove(){
+    let moveRequest = {
+        message_type: "EngineMoveRequest",
+        data: {
+            game_id: gameState.id,
+        }
+    }
+    console.log("Requesting engine move")
+    ws.send(JSON.stringify(moveRequest));
+}
 /*
 Please familiarize yourself with how FEN works before reading this function
 https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
