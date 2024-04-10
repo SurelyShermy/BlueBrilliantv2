@@ -86,7 +86,11 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("WebSocket error:", error);
     };
 });
-
+document.getElementById('forfeit').addEventListener('click', function(event) {
+    event.preventDefault();
+    ws.close();
+    window.location.href = 'http://localhost:8080/userdashboard';
+});
 function updateGameState(message){
     gameState.board = message.board_array;
     gameState.turn = message.turn;
