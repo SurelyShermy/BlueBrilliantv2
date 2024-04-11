@@ -11,7 +11,7 @@ services:
     ports:
       - "3306:3306"
 
-  public:
+  frontend:
     build: .
     env_file:
       - ./.env

@@ -1,9 +1,10 @@
 # Stage 1: Build the React application
 FROM node:latest as react-build
 WORKDIR /app
-COPY ./public/bluebrilliantreact/package.json ./public/bluebrilliantreact/package-lock.json ./
+COPY ./frontend/bluebrilliantreact/package.json ./frontend/bluebrilliantreact/package-lock.json ./
 RUN npm install
-COPY ./public/bluebrilliantreact/ ./
+COPY ./frontend/bluebrilliantreact/ ./
+# ENV PUBLIC_URL=/static/
 RUN npm run build
 
 # Stage 2: Set up the Django application
@@ -12,7 +13,7 @@ ENV HOME /root
 WORKDIR /app
 
 # Copy the built React app from the previous stage
-COPY --from=react-build /app/build/ /app/public/bluebrilliantreact/build/
+COPY --from=react-build /app/build/ /app/frontend/bluebrilliantreact/build/
 
 # Copy the rest of your Django application
 COPY . .
@@ -21,7 +22,7 @@ COPY . .
 RUN pip3 install -r requirements.txt
 
 # Move the React build's index.html to the Django templates directory
-RUN mv /app/public/bluebrilliantreact/build/index.html /app/public/templates/
+# RUN mv /app/public/bluebrilliantreact/build/index.html /app/public/templates/
 
 EXPOSE 8080
 

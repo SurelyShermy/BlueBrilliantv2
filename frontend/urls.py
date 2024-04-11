@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import index, register, user_dashboard, CustomLoginView, pvp, pve_session_setup, mp_session_setup
+from .views import index, register, user_dashboard, CustomLoginView, pvp, pve_session_setup, mp_session_setup, files
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 
@@ -12,5 +12,8 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='index'), name='logout'),
     path('userdashboard/mp_session_setup/', mp_session_setup, name='mp_session_setup'),
     path('pvp/<str:game_id>/', pvp, name='pvp_game'),
-    path('engine/<str:game_id>/', pve_session_setup, name='engine')
+    path('engine/<str:game_id>/', pve_session_setup, name='engine'),
+    path('favicon.ico', files, name='favicon'),
+    path('manifest.json', files, name='manifest'),
+    path('logo192.png', files , name='logo192'),
 ]

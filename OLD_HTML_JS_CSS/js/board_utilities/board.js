@@ -70,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
             updateGameState(message);
         }
         
-        // Update your game state based on the received data
     };
     ws.onclose = () => {
         console.log("Disconnected from the game WebSocket");
@@ -285,9 +284,7 @@ function selectPromotionPiece(chosenPiece, resolve) {
             gameState.board[promotionPosition] = color | pieceBitRep.knight;
             break;
     }
-    // Update the game state and attack table
-    updateAttackTable(gameState, promotionPosition);
-    // Update the DOM (this is an example, your implementation might vary)
+
     const cell = document.getElementById(`cell-${promotionPosition}`);
     const pawnImage = cell.querySelector('img');
     if (pawnImage) {
@@ -324,7 +321,7 @@ function movePieceToNotation(pieceType, fromIndex, toIndex) {
     let capture = false;
     if(gameState.board[toIndex] != 0){
         capture = true;
-    } // Assuming you have a way to determine if it's a capture
+    } 
     const captureNotation = capture ? 'x' : '';
 
     // Combine to create move notation
