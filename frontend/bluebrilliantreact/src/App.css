@@ -12,7 +12,40 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
-
+.ChessBoard {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  grid-template-columns: repeat(8, 60px);
+  grid-template-rows: repeat(8, 60px);
+  gap: 0px 0px;
+  justify-content: center;
+  align-items: center;
+  /* additional styling */
+}
+.cell {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.cell::after {
+  content: attr(data-notation); /* Display the notation text */
+  position: absolute;
+  bottom: 5px; /* Adjust position as needed */
+  right: 3px; /* Adjust position as needed */
+  font-size: 10px; /* Adjust font size as needed */
+  color: #000000; /* Adjust text color as needed */
+}
+.cell img{
+  width: 55px;
+  height: 55px;
+}
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -23,11 +56,25 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
-
+.grabbable {
+  cursor: grab; /* 'grab' cursor when the item is hoverable but not being dragged */
+}
+.grabbable:active {
+  cursor: grabbing; /* 'grabbing' cursor when the item is being dragged */
+}
 .App-link {
   color: #61dafb;
 }
+.light {
+  background-color: #f0d9b5;
+}
 
+.dark {
+  background-color: #b58863;
+}
+.highlight {
+  background-color: yellow;
+}
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

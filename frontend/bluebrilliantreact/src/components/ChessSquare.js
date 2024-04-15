@@ -1,25 +1,62 @@
 import React from 'react';
-
-const ChessSquare = ({ piece, position, onDragStart, onDragOver, onDrop, isHighlight }) => {
+class pieceBitRep {
+    static none = 0;
+    static king = 1;
+    static pawn = 2;
+    static knight = 3;
+    static bishop = 4;
+    static rook = 5;
+    static queen = 6;
+    static white = 8;
+    static black = 16;
+  }
+// 00000001
+const svgPaths = {
+    [pieceBitRep.white | pieceBitRep.king]: "/chessPieces/white/K.svg",
+    [pieceBitRep.white | pieceBitRep.pawn]: "/chessPieces/white/P.svg",
+    [pieceBitRep.white | pieceBitRep.knight]: "/chessPieces/white/N.svg",
+    [pieceBitRep.white | pieceBitRep.bishop]: "/chessPieces/white/B.svg",
+    [pieceBitRep.white | pieceBitRep.rook]: "/chessPieces/white/R.svg",
+    [pieceBitRep.white | pieceBitRep.queen]: "/chessPieces/white/Q.svg",
+    [pieceBitRep.black | pieceBitRep.king]: "/chessPieces/black/k.svg",
+    [pieceBitRep.black | pieceBitRep.pawn]: "/chessPieces/black/p.svg",
+    [pieceBitRep.black | pieceBitRep.knight]: "/chessPieces/black/n.svg",
+    [pieceBitRep.black | pieceBitRep.bishop]: "/chessPieces/black/b.svg",
+    [pieceBitRep.black | pieceBitRep.rook]: "/chessPieces/black/r.svg",
+    [pieceBitRep.black | pieceBitRep.queen]: "/chessPieces/black/q.svg"
+};
+const getPieceImage = (piece) => {
+    return svgPaths[piece];
+};
+const ChessSquare = ({ piece, position, onSelectSquare, onDragStart, onDragOver, onDrop, isSelected, isDragging, legalMoves }) => {
+    // Styling for selected and dragging states
+    let classname = 'cell'
+    if (Math.floor(position / 8) % 2 === 0) {
+        classname += (position % 2 === 0) ? ' dark' : ' light';
+      } else {
+        classname += (position % 2 === 0) ? ' light' : ' dark';
+    }
+    if(legalMoves.includes(position)){
+      classname += " highlight"
+    }
     return (
       <div
-        id={`square-${position}`}
-        className={`chess-square ${isHighlight ? 'highlight' : ''}`}
+        className={classname} 
+        onClick={() => onSelectSquare(position)}
         onDragOver={onDragOver}
         onDrop={(e) => onDrop(e, position)}
       >
+        {piece !== 0 && (
+          <img
+            src={getPieceImage(piece)}
+            alt=""
+            draggable
+            className = {`grabbable`}
+            onDragStart={(e) => onDragStart(e, position)}
+            onDragEnd={onDrop}
+          />
+        )}
       </div>
     );
   };
-
-// Helper function to determine the class based on position (light or dark square)
-const getPositionClass = (index) => {
-  // Your logic to return 'light' or 'dark'
-};
-
-// Helper function to get the image path for a piece
-const getPieceImage = (piece) => {
-  // Your logic to return the image path based on the piece
-};
-
-export default ChessSquare;
+  export default ChessSquare;

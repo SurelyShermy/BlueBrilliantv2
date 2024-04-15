@@ -121,21 +121,6 @@ const svgPaths = {
     [pieceBitRep.black | pieceBitRep.rook]: "../../static/public/images/chessPieces/black/r.svg",
     [pieceBitRep.black | pieceBitRep.queen]: "../../static/public/images/chessPieces/black/q.svg"
 };
-var move = {
-    fromIndex: 0,
-    toIndex: 0,
-}
-const directions = {
-    NW : 15,
-    NE : 17,
-    N : 16,
-    S : -16,
-    SW : -17,
-    SE : -15,
-    E : 1,
-    W : -1,
-    knightmoves : [33, 31, 18, 14, -33, -31, -18, -14],
-};
 
 var boardState = new Array(64).fill(0);
 /*

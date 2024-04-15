@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Modal from './components/modal'; 
 import LoginForm from './components/loginform'; 
@@ -12,7 +11,18 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [ws, setWs] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
-
+  const [matching, setMatching] = useState(false);
+  const [gameId, setGameId] = useState(null);
+  const [user, setUser] = useState({
+    username: null,
+    isAuthenticated: false,
+  });
+  const generateUUID = () => {
+    return 'xxxx-xxxx-xxxx-xxxx'.replace(/[x]/g, () => {
+      const r = (Math.random() * 16) | 0;
+      return r.toString(16);
+    });
+  };
   const handleLogin = async (username, password) => {
     
     const response = await fetch('/login/', {
@@ -27,6 +37,10 @@ function App() {
       const data = await response.json();
       if (data.success) {
         console.log('Login successful, token:', data.token);
+        setUser({
+          username: data.username,
+          isAuthenticated: true,
+        });
       } else {
         console.error('Login failed:', data.error);
       }
@@ -34,7 +48,6 @@ function App() {
       console.error('Login request failed');
     }
   };
-  
   const handleRegister = async (username, password) => {
     const response = await fetch('/register/', {
       method: 'POST',
@@ -57,9 +70,64 @@ function App() {
       console.error('Registration request failed');
     }
   };
+  const handlePvEGameStart = () => {
+    let userId = user.username;
   
-  const handlePlayAsGuest = () => {
-    const newWs = new WebSocket('ws://localhost:4000/ws/some_game_id');
+    if (!user.isAuthenticated) {
+      // Generate UUID for non-authenticated users and update immediately
+      userId = generateUUID();
+      console.log('Generated UUID:', userId);
+      setUser({
+        username: userId,
+        isAuthenticated: false,  // Make sure state reflects non-authentication
+      });
+    }
+    console.log('Starting new PvE game for user:', user.username);
+    startPvEGame(userId);
+  };
+  const startPvEGame = (userId) => {
+    console.log('Starting new PvE game for user:', userId)
+    fetch(`http://localhost:4000/engine_game/${userId}`, {
+      method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+      setGameId(data.game_id);
+      createWS(data.game_id);
+    })
+    .catch(error => {
+      console.error('Error starting new PvE game:', error);
+    });
+  };
+  const handlePvPGameStart = () => {
+    if (user.isAuthenticated) {
+      setMatching(true);
+      startPvPMatchmaking(user.id);
+    } else {
+      console.error('User must be authenticated to start a PvP game');
+    }
+  };
+
+  const startPvPMatchmaking = (userId) => {
+    fetch(`http://localhost:4000/matchmaking/${userId}`, {
+      method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.match_found) {
+        setMatching(false);
+        setGameId(data.game_id);
+        createWS(data.game_id);
+      } else {
+        setTimeout(() => startPvPMatchmaking(userId), 3000);  // Poll every 3 seconds
+      }
+    })
+    .catch(error => {
+      console.error('Error in PvP matchmaking:', error);
+    });
+  };
+  const createWS = (gameId) => {
+    const newWs = new WebSocket(`ws://localhost:4000/ws/${gameId}`);
     setIsConnecting(true);
     newWs.onopen = () => {
       setIsConnecting(false);
@@ -74,7 +142,7 @@ function App() {
       console.error("WebSocket error:", error);
     };
 
-    setWs(newWs);  // Save the WebSocket connection in state
+    setWs(newWs);
   };
   return (
     <div className="App">
@@ -83,9 +151,10 @@ function App() {
           <>
             <button onClick={() => setIsLoginModalOpen(true)}>Open Login</button>
             <button onClick={() => setIsRegisterModalOpen(true)}>Register</button>
-            <button onClick={handlePlayAsGuest} disabled={isConnecting}>
-              {isConnecting ? 'Connecting...' : 'Play as Guest'}
+            <button onClick={handlePvEGameStart} disabled={isConnecting}>
+              {isConnecting ? 'Connecting...' : 'Play the Engine'}
             </button>
+            {user.isAuthenticated && <button onClick={handlePvPGameStart} disabled={matching}>Play vs Player</button>}
           </>
         )}
         <Modal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)}>
@@ -94,7 +163,7 @@ function App() {
         <Modal isOpen={isRegisterModalOpen} onClose={() => setIsRegisterModalOpen(false)}>
           <RegisterForm onRegister={handleRegister} />
         </Modal>
-        {isPlaying && <ChessBoard ws={ws} />}
+        {isPlaying && <ChessBoard ws={ws} username = {user.username} gameId = {gameId} />}
       </header>
     </div>
   );

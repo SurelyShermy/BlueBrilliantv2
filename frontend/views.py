@@ -18,10 +18,14 @@ import json
 from django.urls import reverse
 from .models import AuthToken
 from django.http import FileResponse
-
+import os
 def files(request):
     path = request.path
-    return FileResponse(open('frontend/bluebrilliantreact/public/'+path, 'rb'))
+    try:
+        bytes = FileResponse(open('frontend/bluebrilliantreact/public'+path, 'rb'))
+        return bytes
+    except:
+        return HttpResponse(status=404)
 
 class CustomLoginView(LoginView):
     template_name = 'index.html'
