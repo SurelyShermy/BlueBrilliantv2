@@ -1,16 +1,17 @@
 from django.urls import path
-from .views import index, register, user_dashboard, CustomLoginView, pvp, pve_session_setup, mp_session_setup, files
+from .views import index, CustomLoginView, pvp, pve_session_setup, mp_session_setup, files, RegisterView, check_session, csrf, logoutView
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
-
+from .views import RegisterView
 
 urlpatterns = [
     path('', index, name='index'),
     path('login/', CustomLoginView.as_view(), name='login'),
-    path('register/', register, name='register'),
-    path('userdashboard/', user_dashboard, name='userdashboard'),
-    path('logout/', LogoutView.as_view(next_page='index'), name='logout'),
-    path('userdashboard/mp_session_setup/', mp_session_setup, name='mp_session_setup'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('logout/', logoutView.as_view(), name='logout'),
+    path('check_session/', check_session, name='check_session'),
+    path('csrf/', csrf, name='csrf'),
+    path('mp_session_setup/', mp_session_setup, name='mp_session_setup'),
     path('pvp/<str:game_id>/', pvp, name='pvp_game'),
     path('engine/<str:game_id>/', pve_session_setup, name='engine'),
     path('favicon.ico', files, name='favicon'),

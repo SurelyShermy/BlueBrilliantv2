@@ -12,7 +12,7 @@ const RegisterForm = ({ onRegister }) => {
         setErrorMessage('Passwords do not match');
         return;
     }
-    onRegister(username, password);
+    onRegister(username, password, confirmPassword);
   };
 
   return (
@@ -20,10 +20,6 @@ const RegisterForm = ({ onRegister }) => {
       <div>
         <label>Username</label>
         <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
-      </div>
-      <div>
-        <label>Password</label>
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </div>
       <div>
         <label>Password</label>

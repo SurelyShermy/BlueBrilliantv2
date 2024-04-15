@@ -160,6 +160,27 @@ const ChessBoard = ({ ws, username, gameId}) => {
                 };
                 ws.send(JSON.stringify(moveMessage));
               }
+              const game_over_request = {
+                message_type: "gameOver_request",
+                data: {
+                  game_id: message.game_id,
+                }
+              }
+              ws.send(JSON.stringify(game_over_request));
+            }
+            else if(message.message_type === "gameOver_Response") {
+              if (message.data.result === "Checkmate") {
+                alert("Game Over, checkmate");
+                ws.close();
+              }else if (message.data.result === "Stalemate") {
+                alert("Game Over, stalemate");
+                ws.close();
+              }else if(message.data.result ==="Resignation"){
+                alert("Game Over, resignation");
+                ws.close();
+              }else if (message.data.result === "False") {
+                console.log("Game is still going on");
+              }
             }
           };
           
