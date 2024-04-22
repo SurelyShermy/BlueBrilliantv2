@@ -18,5 +18,5 @@ Including another URLconf
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include('public.urls')),
+    path('', include('frontend.urls')),
 ]

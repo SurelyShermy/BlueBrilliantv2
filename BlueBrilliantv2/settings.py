@@ -37,9 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'public',
+    'frontend',
 
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -50,13 +51,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
 ROOT_URLCONF = 'BlueBrilliantv2.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'frontend', 'bluebrilliantreact', 'build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,15 +71,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'BlueBrilliantv2.wsgi.application'
 
-
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+MEDIA_ROOT = os.path.join(BASE_DIR, 'frontend/bluebrilliantreact/public/media/')
+MEDIA_URL = os.path.join(BASE_DIR, 'frontend/bluebrilliantreact/public/media/')
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME', 'BlueBrilliant'),
-        'USER': 'root',  # Using root user
+        'USER': 'root',
         'PASSWORD': os.getenv('DB_PASS', 'default_root_password'),
         'HOST': os.getenv('DB_SERVICE', 'mysql'),
         'PORT': os.getenv('DB_PORT', '3306'),
@@ -119,8 +121,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
 
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'frontend', 'bluebrilliantreact', 'build', 'static'),
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
