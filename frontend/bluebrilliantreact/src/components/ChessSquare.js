@@ -29,7 +29,6 @@ const getPieceImage = (piece) => {
     return svgPaths[piece];
 };
 const ChessSquare = ({ piece, position, onSelectSquare, onDragStart, onDragOver, onDrop, isSelected, isDragging, legalMoves }) => {
-    // Styling for selected and dragging states
     let classname = 'cell'
     if (Math.floor(position / 8) % 2 === 0) {
         classname += (position % 2 === 0) ? ' dark' : ' light';

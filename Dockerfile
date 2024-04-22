@@ -30,4 +30,4 @@ EXPOSE 8080
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
 RUN chmod +x /wait
 
-CMD /wait && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8080
+CMD /wait && python3 manage.py makemigrations && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8080

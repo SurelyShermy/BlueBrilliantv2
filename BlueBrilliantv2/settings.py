@@ -71,15 +71,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'BlueBrilliantv2.wsgi.application'
 
-
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+MEDIA_ROOT = os.path.join(BASE_DIR, 'frontend/bluebrilliantreact/public/media/')
+MEDIA_URL = os.path.join(BASE_DIR, 'frontend/bluebrilliantreact/public/media/')
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME', 'BlueBrilliant'),
-        'USER': 'root',  # Using root user
+        'USER': 'root',
         'PASSWORD': os.getenv('DB_PASS', 'default_root_password'),
         'HOST': os.getenv('DB_SERVICE', 'mysql'),
         'PORT': os.getenv('DB_PORT', '3306'),

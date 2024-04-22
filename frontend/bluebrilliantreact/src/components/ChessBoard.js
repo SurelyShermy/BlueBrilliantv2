@@ -40,6 +40,15 @@ const ChessBoard = ({ ws, username, gameId}) => {
           return null;
         }
     }
+    const resign = () => {
+        const resignMessage = {
+          message_type: "resign_request",
+          data: {
+            game_id: gameState.id,
+          }
+        };
+        ws.send(JSON.stringify(resignMessage));
+    };
     //FOR CLICKING ONLY
     const onSelectSquare = (position) => {
         const piece = gameState.board_array[position];
@@ -76,6 +85,10 @@ const ChessBoard = ({ ws, username, gameId}) => {
 
     
     const onDragStart = (e, position) => {
+        let color = currentPlayerColor ? pieceBitRep.white : pieceBitRep.black;
+        if (pieceColor(gameState.board_array[position]) !== color) {
+            return;
+        }
         document.body.style.cursor = 'grabbing';
         setDragging(position);
         const message = {
@@ -168,17 +181,17 @@ const ChessBoard = ({ ws, username, gameId}) => {
               }
               ws.send(JSON.stringify(game_over_request));
             }
-            else if(message.message_type === "gameOver_Response") {
-              if (message.data.result === "Checkmate") {
+            else if(message.message_type === "gameOver_response") {
+              if (message.result === "Checkmate") {
                 alert("Game Over, checkmate");
                 ws.close();
-              }else if (message.data.result === "Stalemate") {
+              }else if (message.result === "Stalemate") {
                 alert("Game Over, stalemate");
                 ws.close();
-              }else if(message.data.result ==="Resignation"){
+              }else if(message.result ==="Resignation"){
                 alert("Game Over, resignation");
                 ws.close();
-              }else if (message.data.result === "False") {
+              }else if (message.result === "False") {
                 console.log("Game is still going on");
               }
             }
@@ -204,7 +217,7 @@ const ChessBoard = ({ ws, username, gameId}) => {
         }
     };
   if (!gameState.board_array || gameState.board_array.length === 0) {
-    return <div>Loading...</div>;
+    return <div className='ChessBoard'>Loading...</div>;
   }
   return (
     <div className="ChessBoard">
@@ -212,7 +225,7 @@ const ChessBoard = ({ ws, username, gameId}) => {
         <ChessSquare
           key={index}
           piece={piece}
-          position={index^56}
+          position={currentPlayerColor ? index^56: index}
           legalMoves={legalMoves}
           onSelectSquare={onSelectSquare}
           onDragStart={onDragStart}
@@ -222,6 +235,7 @@ const ChessBoard = ({ ws, username, gameId}) => {
           isDragging={dragging === index}
         />
       ))}
+      <button onClick={resign}>Resign</button>
     </div>
   );
 };

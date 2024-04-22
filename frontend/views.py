@@ -20,6 +20,8 @@ from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.middleware.csrf import get_token
+from .forms import ProfileForm
+from django.conf import settings
 
 from django.views import View
 from .models import AuthToken
@@ -90,6 +92,26 @@ def pvp(request, game_id):
     context = {'gameState': gameState}
     print("made it here")
     return render(request, 'board.html', context)
+
+def profile_upload(request):
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        if form.is_valid():
+            profile = form.save()
+            profile_pic_url = os.path.join(settings.MEDIA_URL, str(profile.profile_picture))
+            print("profile_pic_url", profile_pic_url)
+            return JsonResponse({
+                'success': True,
+                'profilePicUrl': request.build_absolute_uri(profile_pic_url)
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            }, status=400)
+    else:
+        form = ProfileForm(instance=request.user.profile)
+        return render(request, 'profile_upload.html', {'form': form})
 
 
 def pve(request, game_id):

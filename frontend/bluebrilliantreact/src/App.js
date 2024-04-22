@@ -4,6 +4,7 @@ import Modal from './components/modal';
 import LoginForm from './components/loginform'; 
 import RegisterForm from './components/registerform';
 import ChessBoard from './components/ChessBoard';
+import Background from './components/background';
 
 function App() {
   // const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -17,6 +18,7 @@ function App() {
   const [user, setUser] = useState({
     username: null,
     isAuthenticated: false,
+    profilePicUrl: null,
   });
   const generateUUID = () => {
     return 'xxxx-xxxx-xxxx-xxxx'.replace(/[x]/g, () => {
@@ -140,7 +142,45 @@ function App() {
       console.error('Failed to validate session');
     }
   };
+  const handleProfilePicChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+      return;
+    }
   
+    const formData = new FormData();
+    formData.append('profilePic', file);
+  
+    try {
+      const csrfToken = getCsrfToken();
+      const response = await fetch('profile_upload/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': csrfToken,
+        },
+        credentials: 'include',
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          alert('Profile picture updated successfully!');
+          setUser(prev => ({ ...prev, profilePic: data.profilePicUrl }));
+          console.log('Profile picture updated:', data.profilePicUrl)
+          console.log('User:', user);
+        } else {
+          alert('Failed to upload profile picture: ' + data.errors);
+        }
+      } else {
+        const errorData = await response.json();
+        throw new Error('Failed to upload profile picture: ' + errorData.errors);
+      }
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      alert('Error uploading profile picture: ' + error.message);
+    }
+  };
   useEffect(() => {
     const initializeAuthState = async () => {
       const data = await checkSession();
@@ -162,21 +202,22 @@ function App() {
   useEffect(() => {
     checkSession();
   }, []);
+
   const handlePvEGameStart = () => {
     let userId = user.username;
   
     if (!user.isAuthenticated) {
-      // Generate UUID for non-authenticated users and update immediately
       userId = generateUUID();
       console.log('Generated UUID:', userId);
       setUser({
         username: userId,
-        isAuthenticated: false,  // Make sure state reflects non-authentication
+        isAuthenticated: false,
       });
     }
     console.log('Starting new PvE game for user:', user.username);
     startPvEGame(userId);
   };
+  
   const startPvEGame = (userId) => {
     console.log('Starting new PvE game for user:', userId)
     fetch(`http://localhost:4000/engine_game/${userId}`, {
@@ -194,7 +235,7 @@ function App() {
   const handlePvPGameStart = () => {
     if (user.isAuthenticated) {
       setMatching(true);
-      startPvPMatchmaking(user.id);
+      startPvPMatchmaking(user.username);
     } else {
       console.error('User must be authenticated to start a PvP game');
     }
@@ -238,13 +279,14 @@ function App() {
   };
   return (
     <div className="App">
-      <header className="App-header">
-        {!isPlaying && (
-          <>
+        <Background>
+        <div id = "user_handle">
           <div key={user.isAuthenticated}>
             {user.isAuthenticated ? (
               <>
+                <img src={user.profilePicUrl || './defaultprofilepic.png'} alt="Profile" style={{ width: 100, height: 100, borderRadius: '50%' }} />
                 <p>Welcome, {user.username}!</p>
+                <input type="file" onChange={handleProfilePicChange} />
                 <button onClick={handleLogout}>Logout</button>
                 <button onClick={handlePvEGameStart} disabled={isConnecting || matching}>
                   {isConnecting ? 'Connecting...' : 'Play the Engine'}
@@ -267,10 +309,10 @@ function App() {
               </>
             )}
             </div>
-          </>
-        )}
+          </div>
         {isPlaying && <ChessBoard ws={ws} username={user.username} gameId={gameId} />}
-      </header>
+        </Background>
+
     </div>
   );
 }

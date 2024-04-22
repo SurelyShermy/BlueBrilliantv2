@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  background-color: #373646;
 }
 
 .App-logo {
@@ -13,22 +14,68 @@
   }
 }
 .ChessBoard {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+  position: relative;
+  top: 1062px;
+  left: 925px;
   transform: translate(-50%, -50%);
   display: grid;
-  grid-template-columns: repeat(8, 60px);
-  grid-template-rows: repeat(8, 60px);
+  grid-template-columns: repeat(8, 92px);
+  grid-template-rows: repeat(8, 92px);
   gap: 0px 0px;
   justify-content: center;
   align-items: center;
-
+  z-index: 2;
 }
+#user_handle{
+  position: relative;
+  z-index: 1;
+  width: 38.0625rem;
+  height: 9.625rem;
+  top: 366px;
+  left: 1198px;
+  flex-shrink: 0;
+}
+#bbase {
+  width: 1602px;
+  height: 3797px;
+  flex-shrink: 0;
+  fill: #716CA7;
+}
+#base{
+  width: 1718.5px;
+  height: 3856.5px;
+  flex-shrink: 0;
+  fill: #837DC3;
+  stroke-width: 1px;
+  left: 186.5px;
+  stroke: rgba(0, 0, 0, 0.00);
+}
+#baseedges{
+  width: 1718.5px;
+  height: 3083px;
+  flex-shrink: 0;
+  fill: #4B458B;
+  stroke-width: 1px;
+  stroke: rgba(0, 0, 0, 0.00);
+}
+#background {
+  position: relative;
+  width: 1920px;
+height: 4000px;
+flex-shrink: 0;
+  background-color: #373646;
+}
+
+#background svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 .cell {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: 92.75px;
+  height: 92.75px;
   border: 1px solid #ccc;
   display: flex;
   justify-content: center;
@@ -43,12 +90,12 @@
   color: #000000; 
 }
 .cell img{
-  width: 55px;
-  height: 55px;
+  width: 85px;
+  height: 85px;
 }
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
+  min-height: 4000px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -56,11 +103,12 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
 .grabbable {
-  cursor: grab; /* 'grab' cursor when the item is hoverable but not being dragged */
+  cursor: grab;
 }
 .grabbable:active {
-  cursor: grabbing; /* 'grabbing' cursor when the item is being dragged */
+  cursor: grabbing;
 }
 .App-link {
   color: #61dafb;
@@ -75,14 +123,7 @@
 .highlight {
   background-color: yellow;
 }
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
+
 .modal-overlay {
   position: fixed;
   top: 0;
