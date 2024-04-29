@@ -25,7 +25,15 @@ const ChessBoard = ({ ws, username, gameId}) => {
         player1_color: null,
         player2_color: null,
         turn: null,
-        board_array: [],
+        board_array: [
+          13,11,12,14,9,12,11,13,
+          10,10,10,10,10,10,10,10,
+          0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,
+          0,0,0,0,0,0,0,0,
+          18,18,18,18,18,18,18,18,
+          21,19,20,22,17,20,19,21],
         engine: false
         });
     const [dragging, setDragging] = useState(null);
@@ -41,6 +49,7 @@ const ChessBoard = ({ ws, username, gameId}) => {
         }
     }
     const resign = () => {
+      if(ws){
         const resignMessage = {
           message_type: "resign_request",
           data: {
@@ -48,6 +57,7 @@ const ChessBoard = ({ ws, username, gameId}) => {
           }
         };
         ws.send(JSON.stringify(resignMessage));
+      }
     };
     //FOR CLICKING ONLY
     const onSelectSquare = (position) => {
@@ -82,47 +92,108 @@ const ChessBoard = ({ ws, username, gameId}) => {
           ws.send(JSON.stringify(movesRequest));
         }
     };
+    const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 }); // Position of the piece being dragged
 
-    
     const onDragStart = (e, position) => {
-        let color = currentPlayerColor ? pieceBitRep.white : pieceBitRep.black;
-        if (pieceColor(gameState.board_array[position]) !== color) {
-            return;
-        }
         document.body.style.cursor = 'grabbing';
         setDragging(position);
-        const message = {
-        message_type: "moves_request",
-        data: {
-            fromIndex: position,
-            game_id: gameState.id,
+        setDragPosition({ x: e.clientX, y: e.clientY });
+        if (ws) {
+            let color = currentPlayerColor ? pieceBitRep.white : pieceBitRep.black;
+            if (pieceColor(gameState.board_array[position]) !== color) {
+                return;
+            }
+            const message = {
+                message_type: "moves_request",
+                data: {
+                    fromIndex: position,
+                    game_id: gameState.id,
+                }
+            };
+            ws.send(JSON.stringify(message));
         }
-        };
-        ws.send(JSON.stringify(message));
     };
 
     const onDragOver = (e) => {
         e.preventDefault();
+        if (dragging !== null) {
+            setDragPosition({ x: e.clientX, y: e.clientY }); // Update position as mouse moves
+        }
     };
 
     const onDrop = (e, toPosition) => {
-        document.body.style.cursor = '';
-        e.preventDefault();
-        if (legalMoves.includes(toPosition)) {
-            const fromPosition = dragging;
-            const moveMessage = {
-                message_type: "GameMove",
-                data: {
-                    game_id: gameState.id,
-                    fromIndex: fromPosition,
-                    toIndex: toPosition,
-                }
-            };
-            ws.send(JSON.stringify(moveMessage));
+      document.body.style.cursor = 'default';
+        if (ws) {
+            document.body.style.cursor = '';
+            e.preventDefault();
+            if (legalMoves.includes(toPosition)) {
+                const fromPosition = dragging;
+                const moveMessage = {
+                    message_type: "GameMove",
+                    data: {
+                        game_id: gameState.id,
+                        fromIndex: fromPosition,
+                        toIndex: toPosition,
+                    }
+                };
+                ws.send(JSON.stringify(moveMessage));
+            }
+            setLegalMoves([]);
+            setDragging(null);
+            setDragPosition({ x: 0, y: 0 }); // Reset position
+        } else {
+            setDragging(null);
+            setDragPosition({ x: 0, y: 0 });
+            return;
         }
-        setLegalMoves([]);
-        setDragging(null);
     };
+    
+    // const onDragStart = (e, position) => {
+    //   if (ws){
+    //     let color = currentPlayerColor ? pieceBitRep.white : pieceBitRep.black;
+    //     if (pieceColor(gameState.board_array[position]) !== color) {
+    //         return;
+    //     }
+    //     document.body.style.cursor = 'grabbing';
+    //     setDragging(position);
+    //     const message = {
+    //     message_type: "moves_request",
+    //     data: {
+    //         fromIndex: position,
+    //         game_id: gameState.id,
+    //     }
+    //     };
+    //     ws.send(JSON.stringify(message));
+    //   }
+    // };
+
+    // const onDragOver = (e) => {
+    //     e.preventDefault();
+    // };
+
+    // const onDrop = (e, toPosition) => {
+    //   if (ws){
+    //     document.body.style.cursor = '';
+    //     e.preventDefault();
+    //     if (legalMoves.includes(toPosition)) {
+    //         const fromPosition = dragging;
+    //         const moveMessage = {
+    //             message_type: "GameMove",
+    //             data: {
+    //                 game_id: gameState.id,
+    //                 fromIndex: fromPosition,
+    //                 toIndex: toPosition,
+    //             }
+    //         };
+    //         ws.send(JSON.stringify(moveMessage));
+    //     }
+    //     setLegalMoves([]);
+    //     setDragging(null);
+    //   }
+    //   else{
+    //     return;
+    //   }
+    // };
     useEffect(() => {
         if (ws) {
           const initialize = {
@@ -204,20 +275,54 @@ const ChessBoard = ({ ws, username, gameId}) => {
             ws.close();
           };
         }
+        else{
+          const outputArray = calculateOutputArray(
+            gameState.board_array,
+            true
+          );
+          setOutputArray(outputArray);
+        }
       }, [ws, gameId, username]);
     const calculateOutputArray = (boardArray, playerColor) => {
+      if (ws){
         if (playerColor === true) {
-            const array = new Array(64).fill(0);
-            for (let i = 0; i < boardArray.length; i++) {
-            array[i] = boardArray[i ^ 56];
-            }
-            return array;
+          const array = new Array(64).fill(0);
+          for (let i = 0; i < boardArray.length; i++) {
+          array[i] = boardArray[i ^ 56];
+          }
+          return array;
         } else {
             return boardArray;
         }
+      }else{
+        const array = new Array(64).fill(0);
+          for (let i = 0; i < boardArray.length; i++) {
+            array[i] = boardArray[i ^ 56];
+          }
+          return array;
+      }
+
     };
-  if (!gameState.board_array || gameState.board_array.length === 0) {
-    return <div className='ChessBoard'>Loading...</div>;
+  if (!gameState.id && !ws) {
+    return (
+    <div className="ChessBoard">
+      {outputArray.map((piece, index) => (
+        <ChessSquare
+          key={index}
+          piece={piece}
+          dragPosition={dragPosition}
+          position={index^56}
+          legalMoves={legalMoves}
+          onSelectSquare={onSelectSquare}
+          onDragStart={onDragStart}
+          onDragOver={onDragOver}
+          onDrop={onDrop}
+          isSelected={selectedSquare === index}
+          isDragging={dragging === index}
+        />
+      ))}
+    <button onClick={resign}>Resign</button>
+  </div>);
   }
   return (
     <div className="ChessBoard">
@@ -227,6 +332,7 @@ const ChessBoard = ({ ws, username, gameId}) => {
           piece={piece}
           position={currentPlayerColor ? index^56: index}
           legalMoves={legalMoves}
+          dragPosition={dragPosition}
           onSelectSquare={onSelectSquare}
           onDragStart={onDragStart}
           onDragOver={onDragOver}

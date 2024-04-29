@@ -107,8 +107,13 @@ flex-shrink: 0;
 .grabbable {
   cursor: grab;
 }
-.grabbable:active {
-  cursor: grabbing;
+.grabbable:active, .dragging {
+  cursor: grabbing !important;
+}
+.dragging {
+  opacity: 1 !important;  
+  position: fixed !important;
+  pointer-events: none !important;
 }
 .App-link {
   color: #61dafb;

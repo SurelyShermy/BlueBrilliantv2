@@ -28,7 +28,7 @@ const svgPaths = {
 const getPieceImage = (piece) => {
     return svgPaths[piece];
 };
-const ChessSquare = ({ piece, position, onSelectSquare, onDragStart, onDragOver, onDrop, isSelected, isDragging, legalMoves }) => {
+const ChessSquare = ({ piece, position, onSelectSquare, onDragStart, onDragOver, onDrop, dragging, dragPosition, isSelected, legalMoves }) => {
     let classname = 'cell'
     if (Math.floor(position / 8) % 2 === 0) {
         classname += (position % 2 === 0) ? ' dark' : ' light';
@@ -40,7 +40,7 @@ const ChessSquare = ({ piece, position, onSelectSquare, onDragStart, onDragOver,
     }
     return (
       <div
-        className={classname} 
+        className={classname}
         onClick={() => onSelectSquare(position)}
         onDragOver={onDragOver}
         onDrop={(e) => onDrop(e, position)}
@@ -48,9 +48,9 @@ const ChessSquare = ({ piece, position, onSelectSquare, onDragStart, onDragOver,
         {piece !== 0 && (
           <img
             src={getPieceImage(piece)}
-            alt=""
-            draggable
-            className = {`grabbable`}
+            draggable="true"
+            className = {`grabbable ${dragging ? 'dragging' : ''}`}
+            style={dragging ? { position: 'fixed', left: dragPosition.x, top: dragPosition.y, pointerEvents: 'none' } : {}}
             onDragStart={(e) => onDragStart(e, position)}
             onDragEnd={onDrop}
           />

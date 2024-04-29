@@ -76,7 +76,7 @@ def check_session(request):
             'username': request.user.username,
         })
     else:
-        return JsonResponse({'isAuthenticated': False}, status=401)
+        return JsonResponse({'isAuthenticated': False})
         
 
 def csrf(request):
