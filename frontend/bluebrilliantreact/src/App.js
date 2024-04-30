@@ -309,7 +309,8 @@ function App() {
               </>
             )}
             </div>
-          </div>
+        </div>
+        {!isPlaying && <ChessBoard ws = {null} username={null} gameId={null} />}
         {isPlaying && <ChessBoard ws={ws} username={user.username} gameId={gameId} />}
         </Background>
 
