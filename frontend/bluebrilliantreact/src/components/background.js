@@ -5,6 +5,37 @@ const Background = ({children}) => {
   return (
     <div id="background">
         {children}
+        <div>
+          {/* Login Box */}
+          <svg width="622" height="190" viewBox="0 0 622 190" fill="none" xmlns="http://www.w3.org/2000/svg" style={{top: '329px',left: '1185px',gap: '0px',opacity: '0px', zIndex: '1'}}>
+            <path d="M622 178.604L615.13 184.302L608.26 190L608.26 178.604L622 178.604Z" fill="#E8E3D3"/>
+            <path d="M0 11.3967L6.86976 5.69843L13.7395 0.000124389L13.7395 11.3963L0 11.3967Z" fill="#E8E3D3"/>
+            <rect width="608.26" height="178.539" transform="matrix(-1 1.74846e-07 1.74846e-07 1 608.331 11.397)" fill="#E8E3D3"/>
+            <rect width="608.26" height="178.539" transform="matrix(-1 1.74846e-07 1.74846e-07 1 622 0.000976562)" fill="#EFE9D7"/>
+          </svg>
+        </div>
+        <div>
+          {/* Bottom time box*/}
+          <svg width="380" height="95" viewBox="0 0 380 95" fill="none" xmlns="http://www.w3.org/2000/svg" style = {{top: '1609px',left: '910.5px',gap: '0px',opacity: '0px', zIndex: '1'}}>
+            <path d="M379.85 89.3018L375.654 92.1509L371.459 95.0001L371.459 89.302L379.85 89.3018Z" fill="#E8E3D3"/>
+            <path d="M0 5.69824L4.1953 2.84908L8.39059 -7.39702e-05L8.3906 5.69801L0 5.69824Z" fill="#E8E3D3"/>
+            <rect width="371.459" height="89.27" transform="matrix(-1 1.74846e-07 1.74846e-07 1 371.502 5.69824)" fill="#E8E3D3"/>
+            <rect width="371.459" height="89.27" transform="matrix(-1 1.74846e-07 1.74846e-07 1 379.85 0.000488281)" fill="#FFF8E5"/>
+          </svg>
+        </div>
+        <div>
+          {/* Top time box */}
+        <svg width="380" height="95" viewBox="0 0 380 95" fill="none" xmlns="http://www.w3.org/2000/svg" style = {{top: '708px',left: '910px',gap: '0px',opacity: '0px', zIndex: '1'}}>
+          <path d="M379.85 89.3018L375.654 92.1509L371.459 95.0001L371.459 89.302L379.85 89.3018Z" fill="#E8E3D3"/>
+          <path d="M0 5.69824L4.1953 2.84908L8.39059 -7.39702e-05L8.3906 5.69801L0 5.69824Z" fill="#E8E3D3"/>
+          <rect width="371.459" height="89.27" transform="matrix(-1 1.74846e-07 1.74846e-07 1 371.502 5.69824)" fill="#E8E3D3"/>
+          <rect width="371.459" height="89.27" transform="matrix(-1 1.74846e-07 1.74846e-07 1 379.85 0.000488281)" fill="#FFF8E5"/>
+        </svg>
+
+        </div>
+        
+
+
       <svg xmlns="http://www.w3.org/2000/svg" width="1719" height="3857" viewBox="0 0 1719 3857" fill="none"style={{top: '47px', left: '186.5px'}}>
         <path d="M0.5 484V0H1086.5V97.5H1719V772H1629L1628.5 3856.5H89V3278.5H178V2122.5H995.5V1833.5L182 1833L181.5 484H0.5Z" fill="#837DC3"/>
         <path d="M1177 3567L1176.5 3278.5H1447V3567H1177Z" fill="#837DC3"/>
