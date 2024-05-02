@@ -34,7 +34,12 @@ def files(request):
         return bytes
     except:
         return HttpResponse(status=404)
-    
+def images(request, img_name):
+    try:
+        bytes = FileResponse(open('frontend/bluebrilliantreact/public/images/'+img_name, 'rb'))
+        return bytes
+    except:
+        return HttpResponse(status=404)
 @method_decorator(ensure_csrf_cookie, name='dispatch')
 class CustomLoginView(LoginView):
     def post (self, request):
@@ -100,10 +105,13 @@ def profile_upload(request):
             profile = form.save()
             profile_pic_url = os.path.join(settings.MEDIA_URL, str(profile.profile_picture))
             print("profile_pic_url", profile_pic_url)
+            with open(profile_pic_url, 'wb') as f:
+                f.write(profile_pic_url)
             return JsonResponse({
                 'success': True,
                 'profilePicUrl': request.build_absolute_uri(profile_pic_url)
             })
+            
         else:
             return JsonResponse({
                 'success': False,

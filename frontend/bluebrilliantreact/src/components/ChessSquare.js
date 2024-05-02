@@ -44,6 +44,7 @@ const ChessSquare = ({ piece, position, onSelectSquare, onDragStart, onDragOver,
         onClick={() => onSelectSquare(position)}
         onDragOver={onDragOver}
         onDrop={(e) => onDrop(e, position)}
+        style={{zIndex: 7- (position  % 8)}}
       >
         {piece !== 0 && (
           <img
