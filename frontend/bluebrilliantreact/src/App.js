@@ -5,7 +5,8 @@ import LoginForm from './components/loginform';
 import RegisterForm from './components/registerform';
 import ChessBoard from './components/ChessBoard';
 import Background from './components/background';
-
+import PvpButton from './components/PvpButton';
+import PveButton from './components/PveButton';
 function App() {
   // const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   // const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -280,6 +281,20 @@ function App() {
   return (
     <div className="App">
         <Background>
+        <PvpButton defaultImg="images/basePVP.svg"
+                hoverImg="images/hoveredloggedinplaypvpbutton.svg"
+                loggedInImg="images/loggedinplaypvpbutton.svg"
+                onClick={handlePvPGameStart}
+                altText="Play vs Player"
+                disabled={matching || isConnecting}
+                loggedIn={user.isAuthenticated}
+        />
+        <PveButton defaultImg="images/playEngineBase.svg"
+                hoverImg="images/hoveredEngineButton.svg"
+                onClick={handlePvEGameStart}
+                altText="Play vs Engine"
+                disabled={isConnecting || matching}
+        />
         <div id = "user_handle">
           <div key={user.isAuthenticated}>
             {user.isAuthenticated ? (
@@ -291,7 +306,7 @@ function App() {
                 <button onClick={handlePvEGameStart} disabled={isConnecting || matching}>
                   {isConnecting ? 'Connecting...' : 'Play the Engine'}
                 </button>
-                <button onClick={handlePvPGameStart} disabled={matching || isConnecting}>Play vs Player</button>
+                {/* <button onClick={handlePvPGameStart} disabled={matching || isConnecting}>Play vs Player</button> */}
               </>
             ) : (
               <>

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import index, CustomLoginView, pvp, pve_session_setup, mp_session_setup, files, RegisterView, check_session, csrf, logoutView, profile_upload
+from .views import index, CustomLoginView, pvp, pve_session_setup, mp_session_setup, files, RegisterView, check_session, csrf, logoutView, profile_upload, images
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 from .views import RegisterView
@@ -33,5 +33,10 @@ urlpatterns = [
     path("chessPieces/black/b.svg", files, name='blackB'),
     path("chessPieces/black/p.svg", files, name='blackP'),
     path("defaultprofilepic.png", files, name='background'),
+    path("black.png", files, name='black'),
+    path("highlight.png", files, name='highlight'),
+    path("white.png", files, name='white'),
     path("profile_upload/", profile_upload, name='profile_upload'),
+    path("images/<str:img_name>/", images, name='images'),
+
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

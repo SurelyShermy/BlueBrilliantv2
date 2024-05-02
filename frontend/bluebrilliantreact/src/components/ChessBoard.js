@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ChessSquare from './ChessSquare';
+import EngineInteractive from './engineInteractive';
+import '../App.css';
 class pieceBitRep {
     static none = 0;
     static king = 1;
@@ -305,43 +307,81 @@ const ChessBoard = ({ ws, username, gameId}) => {
     };
   if (!gameState.id && !ws) {
     return (
-    <div className="ChessBoard">
-      {outputArray.map((piece, index) => (
-        <ChessSquare
-          key={index}
-          piece={piece}
-          dragPosition={dragPosition}
-          position={index^56}
-          legalMoves={legalMoves}
-          onSelectSquare={onSelectSquare}
-          onDragStart={onDragStart}
-          onDragOver={onDragOver}
-          onDrop={onDrop}
-          isSelected={selectedSquare === index}
-          isDragging={dragging === index}
-        />
-      ))}
-    <button onClick={resign}>Resign</button>
-  </div>);
+    <div className = "BoardWrapper">
+      <div className="ChessBoard">
+        {outputArray.map((piece, index) => (
+          <ChessSquare
+            key={index}
+            piece={piece}
+            dragPosition={dragPosition}
+            position={index^56}
+            legalMoves={legalMoves}
+            onSelectSquare={onSelectSquare}
+            onDragStart={onDragStart}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+            isSelected={selectedSquare === index}
+            isDragging={dragging === index}
+          />
+        ))}
+    </div>
+    <EngineInteractive engine = {gameState.engine}/>
+      <div className = 'timer2'>
+          10:00
+        </div>
+      <div className = 'timer1'>  
+          10:00
+      </div>
+      <div className='player1_Stats'>
+        <img src="defaultprofilepic.png" alt =""></img>
+
+        <span>{username ? username : "Player 1"}</span>
+      </div>
+      <div className='player2_Stats'>
+        <img src="defaultprofilepic.png" alt =""></img>
+
+        <span>{gameState.player2_id ? gameState.player2_id : "Player 2"}</span>
+      </div>
+      <button onClick={resign} className="resign" >Resign</button>
+ </div>);
   }
   return (
-    <div className="ChessBoard">
-      {outputArray.map((piece, index) => (
-        <ChessSquare
-          key={index}
-          piece={piece}
-          position={currentPlayerColor ? index^56: index}
-          legalMoves={legalMoves}
-          dragPosition={dragPosition}
-          onSelectSquare={onSelectSquare}
-          onDragStart={onDragStart}
-          onDragOver={onDragOver}
-          onDrop={onDrop}
-          isSelected={selectedSquare === index}
-          isDragging={dragging === index}
-        />
-      ))}
-      <button onClick={resign}>Resign</button>
+    <div className = "BoardWrapper">
+      <div className="ChessBoard">
+        {outputArray.map((piece, index) => (
+          <ChessSquare
+            key={index}
+            piece={piece}
+            position={currentPlayerColor ? index^56: index}
+            legalMoves={legalMoves}
+            dragPosition={dragPosition}
+            onSelectSquare={onSelectSquare}
+            onDragStart={onDragStart}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+            isSelected={selectedSquare === index}
+            isDragging={dragging === index}
+          />
+        ))}
+        </div>
+        <EngineInteractive engine = {gameState.engine}/>
+        <div className = 'timer2'>
+          10:00
+        </div>
+        <div className = 'timer1'>
+            10:00
+        </div>
+        <div className='player1_Stats'>
+            <img src="defaultprofilepic.png" alt =""></img>
+            <span>{gameState.player1_id}</span>
+        </div>
+        <div className='player2_Stats'>
+          <img src="defaultprofilepic.png" alt =""></img>
+          <span>{gameState.player2_id ? gameState.player2_id : "BlueBrilliant"}</span>
+
+        </div>
+        <button onClick={resign} className="resign">Resign</button>
+      
     </div>
   );
 };
