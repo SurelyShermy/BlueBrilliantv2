@@ -18,6 +18,10 @@ COPY --from=react-build /app/build/ /app/frontend/bluebrilliantreact/build/
 # Copy the rest of your Django application
 COPY . .
 
+# Nginx stuff
+FROM nginx:latest
+COPY nginx.conf /etc/nginx/nginx.conf
+
 # Install Django dependencies
 RUN pip3 install -r requirements.txt
 

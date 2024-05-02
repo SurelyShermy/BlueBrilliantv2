@@ -28,6 +28,16 @@ services:
       - mysql
     ports:
       - '8080:8080'
+
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+    
   engine:
     build: 
       context: ./engine
