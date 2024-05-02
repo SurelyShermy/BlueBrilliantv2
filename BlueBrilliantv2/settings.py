@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-wqk!6)kvp=cwrk!s5fwebe6*drvlmh$t#qfn*k@g@=a3awwr6(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['159.203.107.176', 'localhost', '127.0.0.1', 'api.rev.pm', 'yourdomain.com']
+ALLOWED_HOSTS = ['159.203.107.176', 'localhost', '127.0.0.1', 'bluebrilliant.me']
 
 
 # Application definition
