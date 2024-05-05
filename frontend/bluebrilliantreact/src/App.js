@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Modal from './components/modal'; 
 import LoginForm from './components/loginform'; 
@@ -10,6 +10,7 @@ import PveButton from './components/PveButton';
 function App() {
   // const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   // const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const chessBoardRef = useRef(null);
   const [activeForm, setActiveForm] = useState('login');
   const [isPlaying, setIsPlaying] = useState(false);
   const [ws, setWs] = useState(null);
@@ -206,7 +207,9 @@ function App() {
 
   const handlePvEGameStart = () => {
     let userId = user.username;
-  
+    if (chessBoardRef.current) {
+      chessBoardRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
     if (!user.isAuthenticated) {
       userId = generateUUID();
       console.log('Generated UUID:', userId);
@@ -232,8 +235,12 @@ function App() {
     .catch(error => {
       console.error('Error starting new PvE game:', error);
     });
+    
   };
   const handlePvPGameStart = () => {
+    if (chessBoardRef.current) {
+      chessBoardRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
     if (user.isAuthenticated) {
       setMatching(true);
       startPvPMatchmaking(user.username);
@@ -325,8 +332,8 @@ function App() {
             )}
             </div>
         </div>
-        {!isPlaying && <ChessBoard ws = {null} username={null} gameId={null} />}
-        {isPlaying && <ChessBoard ws={ws} username={user.username} gameId={gameId} />}
+        {!isPlaying && <ChessBoard ref={chessBoardRef} ws = {null} username={null} gameId={null} />}
+        {isPlaying && <ChessBoard ref={chessBoardRef} ws={ws} username={user.username} gameId={gameId} />}
         </Background>
 
     </div>

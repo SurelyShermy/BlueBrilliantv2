@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import ChessSquare from './ChessSquare';
 import EngineInteractive from './engineInteractive';
+import PromotionModal from './promoteModal';
+
 import '../App.css';
 class pieceBitRep {
     static none = 0;
@@ -36,11 +38,80 @@ const ChessBoard = ({ ws, username, gameId}) => {
           0,0,0,0,0,0,0,0,
           18,18,18,18,18,18,18,18,
           21,19,20,22,17,20,19,21],
-        engine: false
+        engine: false,
+        player1_time: 0,
+        player2_time: 0,
         });
     const [dragging, setDragging] = useState(null);
     const [legalMoves, setLegalMoves] = useState([]);
-
+    const [isPromotionOpen, setIsPromotionOpen] = useState(false);
+    const [promotionData, setPromotionData] = useState(null);
+    const whitePromotionOptions = [
+      {type: "knight", image: "/chessPieces/white/N.svg"},
+      {type: "bishop", image: "/chessPieces/white/B.svg"},
+      {type: "rook", image: "/chessPieces/white/R.svg"},
+      {type: "queen", image: "/chessPieces/white/Q.svg"},
+    ];
+    const blackPromotionOptions = [
+      {type: "knight", image: "/chessPieces/black/n.svg"},
+      {type: "bishop", image: "/chessPieces/black/b.svg"},
+      {type: "rook", image: "/chessPieces/black/r.svg"},
+      {type: "queen", image: "/chessPieces/black/q.svg"},
+    ];
+    const handlePieceSelection = (type) => {
+      // Assuming you handle promotion and encode it here
+      console.log(`Promoted to: ${type}`);
+      setIsPromotionOpen(false);
+      const difference = promotionData.toPosition - promotionData.fromPosition;
+      let direction;
+      let piece;
+      if (gameState.turn){
+        if (difference === 8){
+          direction = 1 << 7;
+        }else if (difference === 7){
+          direction = 0;
+        }else{
+          direction = 1<<6;
+        }
+      }else{
+        if (difference === -8){
+          direction = 1 << 7;
+        }else if (difference === -7){
+          direction = 0;
+        }else{
+          direction = 1 << 6;
+        }
+      }
+      switch (type) {
+        case "knight":
+          piece = 0;
+          break;
+        case "bishop":
+          piece = 1 << 4
+          break;
+        case "rook":
+          piece = 1 << 5;
+          break;
+        case "queen":
+          piece = 1<<4 | 1<<5;
+          break;
+        default:
+          piece = 1<<4 | 1<<5;
+          break;
+      }
+      let encodedToPosition = piece | direction;
+      console.log("sent", promotionData.fromPosition, encodedToPosition)
+      const moveMessage = {
+          message_type: "GameMove",
+          data: {
+              game_id: gameState.id,
+              fromIndex: promotionData.fromPosition,
+              toIndex: encodedToPosition,
+          }
+      };
+      ws.send(JSON.stringify(moveMessage));
+      setPromotionData(null);
+  };
     const pieceColor = (piece) => {
         if ((piece & pieceBitRep.white) === pieceBitRep.white) {
           return pieceBitRep.white;
@@ -130,6 +201,21 @@ const ChessBoard = ({ ws, username, gameId}) => {
             e.preventDefault();
             if (legalMoves.includes(toPosition)) {
                 const fromPosition = dragging;
+                if (gameState.board_array[fromPosition] === (pieceBitRep.pawn | pieceBitRep.white)) {
+                    if (toPosition >= 56) {
+                      //This is a promotion, pop a modal
+                      setIsPromotionOpen(true);
+                      setPromotionData({ fromPosition, toPosition });
+                      return;
+                    }
+                  }else if(gameState.board_array[fromPosition] === (pieceBitRep.pawn | pieceBitRep.black)){
+                    if (toPosition <= 7) {
+                      //This is a promotion, pop a modal
+                      setIsPromotionOpen(true);
+                      setPromotionData({ fromPosition, toPosition });
+                      return;
+                    }
+                  }
                 const moveMessage = {
                     message_type: "GameMove",
                     data: {
@@ -196,7 +282,28 @@ const ChessBoard = ({ ws, username, gameId}) => {
     //     return;
     //   }
     // };
+    const sendTimeUpdateRequest = () => {
+        const timeUpdateRequest = {
+            message_type: "time_update",
+            data: { gameId: gameId },
+        };
+        console.log(currentPlayerColor, gameState.turn)
+        if (currentPlayerColor === gameState.turn && !gameState.engine){
+            ws.send(JSON.stringify(timeUpdateRequest));
+        }
+    };
+    function formatTime(totalSeconds) {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`; // Pads the seconds with zero if less than 10
+    }
+    const timeUpdateRequestRef = useRef(sendTimeUpdateRequest);
+    
     useEffect(() => {
+        timeUpdateRequestRef.current = sendTimeUpdateRequest;
+    });
+    useEffect(() => {
+
         if (ws) {
           const initialize = {
             message_type: "Initialize",
@@ -205,7 +312,9 @@ const ChessBoard = ({ ws, username, gameId}) => {
             }
           };
           ws.send(JSON.stringify(initialize));
-      
+          const timeUpdateInterval = setInterval(() => {
+            timeUpdateRequestRef.current();
+          }, 1000);
           ws.onmessage = (event) => {
             const message = JSON.parse(event.data);
             console.log(message);
@@ -233,7 +342,9 @@ const ChessBoard = ({ ws, username, gameId}) => {
                 player2_color: message.player2_color,
                 player1_id: message.player1_id,
                 player2_id: message.player2_id,
-                engine: message.engine
+                engine: message.engine,
+                player1_time: message.player1_time,
+                player2_time: message.player2_time,
               });
               setCurrentPlayerColor(playerColor);
               setOutputArray(outputArray);
@@ -254,12 +365,28 @@ const ChessBoard = ({ ws, username, gameId}) => {
               }
               ws.send(JSON.stringify(game_over_request));
             }
+            else if(message.message_type === "time_update") {
+              setGameState({
+                ...gameState,
+                player1_time: message.player1_time,
+                player2_time: message.player2_time,
+              });
+            }
             else if(message.message_type === "gameOver_response") {
-              if (message.result === "Checkmate") {
-                alert("Game Over, checkmate");
+              if (message.result === "Black wins") {
+                alert("Game Over Black wins, checkmate");
+                ws.close();
+              }else if (message.result === "White wins") {
+                alert("Game Over White wins, checkmate");
                 ws.close();
               }else if (message.result === "Stalemate") {
                 alert("Game Over, stalemate");
+                ws.close();
+              }else if(message.result ==="Player 1 wins on time"){
+                alert(`Game Over Player 1 wins on time`);
+                ws.close();
+              }else if(message.result === "Player 2 wins on time"){
+                alert("Game Over Player 2 wins on time");
                 ws.close();
               }else if(message.result ==="Resignation"){
                 alert("Game Over, resignation");
@@ -270,10 +397,18 @@ const ChessBoard = ({ ws, username, gameId}) => {
             }
           };
           
-          ws.onclose = () => console.log("Disconnected from the game WebSocket");
-          ws.onerror = (error) => console.error("WebSocket error:", error);
+          ws.onclose = () => {
+            console.log("Disconnected from the game WebSocket");
+            clearInterval(timeUpdateInterval); // Clear interval on socket close
+
+          };
+          ws.onerror = (error) => {
+            console.error("WebSocket error:", error);
+            clearInterval(timeUpdateInterval); // Clear interval on socket close
+          };
       
           return () => {
+            clearInterval(timeUpdateInterval); // Clear interval on socket close
             ws.close();
           };
         }
@@ -324,6 +459,7 @@ const ChessBoard = ({ ws, username, gameId}) => {
             isDragging={dragging === index}
           />
         ))}
+
     </div>
     <EngineInteractive engine = {gameState.engine}/>
       <div className = 'timer2'>
@@ -363,21 +499,26 @@ const ChessBoard = ({ ws, username, gameId}) => {
             isDragging={dragging === index}
           />
         ))}
+        <PromotionModal
+          isOpen={isPromotionOpen}
+          options={currentPlayerColor ? whitePromotionOptions : blackPromotionOptions}
+          onSelect={handlePieceSelection}
+        />
         </div>
         <EngineInteractive engine = {gameState.engine}/>
         <div className = 'timer2'>
-          10:00
+          {username === gameState.player1_id ? formatTime(gameState.player2_time) : formatTime(gameState.player1_time)}
         </div>
         <div className = 'timer1'>
-            10:00
+          {username === gameState.player1_id ? formatTime(gameState.player1_time) : formatTime(gameState.player2_time)}
         </div>
         <div className='player1_Stats'>
             <img src="defaultprofilepic.png" alt =""></img>
-            <span>{gameState.player1_id}</span>
+            <span>{username}</span>
         </div>
         <div className='player2_Stats'>
           <img src="defaultprofilepic.png" alt =""></img>
-          <span>{gameState.player2_id ? gameState.player2_id : "BlueBrilliant"}</span>
+          <span>{username == gameState.player1_id ? gameState.player2_id : gameState.player1_id}</span>
 
         </div>
         <button onClick={resign} className="resign">Resign</button>
