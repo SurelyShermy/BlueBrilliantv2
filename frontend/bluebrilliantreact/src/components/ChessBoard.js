@@ -2,8 +2,12 @@ import React, { useState, useEffect, useRef} from 'react';
 import ChessSquare from './ChessSquare';
 import EngineInteractive from './engineInteractive';
 import PromotionModal from './promoteModal';
-
+import ResignButton from './ResignButton';
+import ChatButton from './Chatbutton';
+import SearchButton from './SearchButton';
 import '../App.css';
+import GameOverModal from './GameOverModal';
+
 class pieceBitRep {
     static none = 0;
     static king = 1;
@@ -16,11 +20,12 @@ class pieceBitRep {
     static white = 8;
     static black = 16;
   }
-const ChessBoard = ({ ws, username, gameId}) => {
+const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
     const [selectedSquare, setSelectedSquare] = useState(null);
     const [isPieceSelected, setIsPieceSelected] = useState(false);
     const [currentPlayerColor, setCurrentPlayerColor] = useState(null); 
     const [outputArray, setOutputArray] = useState([]);
+    const [gameResult, setGameResult] = useState('');
     const [gameState, setGameState] = useState({
         board: null,
         id: null,
@@ -42,6 +47,23 @@ const ChessBoard = ({ ws, username, gameId}) => {
         player1_time: 0,
         player2_time: 0,
         });
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+
+    const handleRematch = () => {
+      const rematchRequest = {
+        message_type: "rematch_request",
+        data: {
+          game_id: gameState.id,
+        }
+      };
+      ws.send(JSON.stringify(rematchRequest));
+    };
+    
+    const closeModal = () => {
+        setModalIsOpen(false);
+        ws.close();
+        window.location.reload();
+    };
     const [dragging, setDragging] = useState(null);
     const [legalMoves, setLegalMoves] = useState([]);
     const [isPromotionOpen, setIsPromotionOpen] = useState(false);
@@ -87,16 +109,16 @@ const ChessBoard = ({ ws, username, gameId}) => {
           piece = 0;
           break;
         case "bishop":
-          piece = 1 << 4
+          piece = (1 << 4);
           break;
         case "rook":
-          piece = 1 << 5;
+          piece = (1 << 5);
           break;
         case "queen":
-          piece = 1<<4 | 1<<5;
+          piece = (1<<4) | (1<<5);
           break;
         default:
-          piece = 1<<4 | 1<<5;
+          piece = (1<<4) | (1<<5);
           break;
       }
       let encodedToPosition = piece | direction;
@@ -127,6 +149,7 @@ const ChessBoard = ({ ws, username, gameId}) => {
           message_type: "resign_request",
           data: {
             game_id: gameState.id,
+            player: username,
           }
         };
         ws.send(JSON.stringify(resignMessage));
@@ -373,26 +396,34 @@ const ChessBoard = ({ ws, username, gameId}) => {
               });
             }
             else if(message.message_type === "gameOver_response") {
-              if (message.result === "Black wins") {
-                alert("Game Over Black wins, checkmate");
-                ws.close();
-              }else if (message.result === "White wins") {
-                alert("Game Over White wins, checkmate");
-                ws.close();
+              if (message.result.endsWith("wins")) {
+                let winner = message.result.split(" ")[0];
+                if (winner === username) {
+                  setGameResult("win");
+                }else{
+                  setGameResult("lose");
+                }
+                setModalIsOpen(true);
               }else if (message.result === "Stalemate") {
-                alert("Game Over, stalemate");
-                ws.close();
-              }else if(message.result ==="Player 1 wins on time"){
-                alert(`Game Over Player 1 wins on time`);
-                ws.close();
-              }else if(message.result === "Player 2 wins on time"){
-                alert("Game Over Player 2 wins on time");
-                ws.close();
-              }else if(message.result ==="Resignation"){
-                alert("Game Over, resignation");
-                ws.close();
-              }else if (message.result === "False") {
-                console.log("Game is still going on");
+                setGameResult("draw");
+                setModalIsOpen(true);
+              }else if(message.result.endsWith("resigned")){
+                let winner = message.result.split(" ")[0];
+                let loser = message.result.split(" ")[1];
+                if (winner === username) {
+                  setGameResult("win");
+                }else{
+                  setGameResult("lose");
+                }
+                setModalIsOpen(true);
+              }else if(message.result.endsWith("wins on time")){
+                let winner = message.result.split(" ")[0];
+                if (winner === username) {
+                  setGameResult("win");
+                }else{
+                  setGameResult("lose");
+                }
+                setModalIsOpen(true);
               }
             }
           };
@@ -462,6 +493,10 @@ const ChessBoard = ({ ws, username, gameId}) => {
 
     </div>
     <EngineInteractive engine = {gameState.engine}/>
+    <ResignButton defaultImg="/images/base_resign.png" hoverImg="/images/hover_resign.png" onClick={null} altText="Resign"/>
+    <ChatButton defaultImg="/images/chatbutton.png" hoverImg="/images/chatbutton.png" onClick={null} altText="Resign"/>
+    <SearchButton defaultImg="/images/searchbutton.png" hoverImg="/images/searchbutton.png" onClick={null} altText="Resign"/>
+    <GameOverModal isOpen={modalIsOpen} result={null} rematch={handleRematch} newGame = {newGame} onClose={closeModal}/>
       <div className = 'timer2'>
           10:00
         </div>
@@ -478,7 +513,7 @@ const ChessBoard = ({ ws, username, gameId}) => {
 
         <span>{gameState.player2_id ? gameState.player2_id : "Player 2"}</span>
       </div>
-      <button onClick={resign} className="resign" >Resign</button>
+
  </div>);
   }
   return (
@@ -506,6 +541,10 @@ const ChessBoard = ({ ws, username, gameId}) => {
         />
         </div>
         <EngineInteractive engine = {gameState.engine}/>
+        <ResignButton defaultImg="/images/base_resign.png" hoverImg="/images/hover_resign.png" onClick={resign} altText="Resign"/>
+        <ChatButton defaultImg="/images/chatbutton.png" hoverImg="/images/chatbutton.png" onClick={null} altText="Resign"/>
+        <SearchButton defaultImg="/images/searchbutton.png" hoverImg="/images/searchbutton.png" onClick={null} altText="Resign"/>
+        <GameOverModal isOpen={modalIsOpen} result={gameResult} rematch={handleRematch} newGame = {newGame} onClose={closeModal}/>
         <div className = 'timer2'>
           {username === gameState.player1_id ? formatTime(gameState.player2_time) : formatTime(gameState.player1_time)}
         </div>

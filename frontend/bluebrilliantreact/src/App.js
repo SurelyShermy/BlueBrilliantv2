@@ -333,7 +333,14 @@ function App() {
             </div>
         </div>
         {!isPlaying && <ChessBoard ref={chessBoardRef} ws = {null} username={null} gameId={null} />}
-        {isPlaying && <ChessBoard ref={chessBoardRef} ws={ws} username={user.username} gameId={gameId} />}
+        {isPlaying && <ChessBoard ref={chessBoardRef} ws={ws} username={user.username} gameId={gameId} newGame={handlePvPGameStart} />}
+        <img src="images/alex.png" alt="Alex" className="alexNameplate" />
+        <a href= "https://github.com/SurelyShermy/"><img src="images/alex_github.png" alt="Alex" className="alexGithub" /></a>
+        <a href= "https://www.linkedin.com/in/alexander-sherman-028892234/"><img src="images/alex_linkedin.png" alt="Alex" className="alexLinkedin" /></a>
+        <img src="images/mason.png" alt="mason" className="masonNameplate" />
+        <img src="images/masongit.png" alt="mason" className="masonGithub" />
+        <img src="images/masonlinkedin.png" alt="Alex" className="masonLinkedin" />
+        <img src="images/dylan.png" alt="dylan" className="dylanNameplate" />
         </Background>
 
     </div>
