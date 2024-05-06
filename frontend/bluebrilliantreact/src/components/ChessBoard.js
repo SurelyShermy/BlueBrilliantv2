@@ -169,7 +169,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
     const onSelectSquare = (position) => {
         const piece = gameState.board_array[position];
         if (isPieceSelected) {
-          if ((piece !== 0 && pieceColor(piece) === currentPlayerColor) || legalMoves.includes(position)) {
+          if ((piece !== 0 && (pieceColor(piece) === currentPlayerColor)) || legalMoves.includes(position)) {
             const moveMessage = {
               message_type: "make_move",
               data: {
@@ -268,53 +268,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
             return;
         }
     };
-    
-    // const onDragStart = (e, position) => {
-    //   if (ws){
-    //     let color = currentPlayerColor ? pieceBitRep.white : pieceBitRep.black;
-    //     if (pieceColor(gameState.board_array[position]) !== color) {
-    //         return;
-    //     }
-    //     document.body.style.cursor = 'grabbing';
-    //     setDragging(position);
-    //     const message = {
-    //     message_type: "moves_request",
-    //     data: {
-    //         fromIndex: position,
-    //         game_id: gameState.id,
-    //     }
-    //     };
-    //     ws.send(JSON.stringify(message));
-    //   }
-    // };
 
-    // const onDragOver = (e) => {
-    //     e.preventDefault();
-    // };
-
-    // const onDrop = (e, toPosition) => {
-    //   if (ws){
-    //     document.body.style.cursor = '';
-    //     e.preventDefault();
-    //     if (legalMoves.includes(toPosition)) {
-    //         const fromPosition = dragging;
-    //         const moveMessage = {
-    //             message_type: "GameMove",
-    //             data: {
-    //                 game_id: gameState.id,
-    //                 fromIndex: fromPosition,
-    //                 toIndex: toPosition,
-    //             }
-    //         };
-    //         ws.send(JSON.stringify(moveMessage));
-    //     }
-    //     setLegalMoves([]);
-    //     setDragging(null);
-    //   }
-    //   else{
-    //     return;
-    //   }
-    // };
     const sendTimeUpdateRequest = () => {
         console.log(modalIsOpen)
         if (modalIsOpen === false){
@@ -339,7 +293,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
     
     useEffect(() => {
       console.log(modalIsOpen, "in use effect")
-      if (modalIsOpen === false){
+      if (modalIsOpen === false || !gameState.engine){
         timeUpdateRequestRef.current = sendTimeUpdateRequest;
       }
     });
@@ -469,31 +423,35 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
         else{
           const outputArray = calculateOutputArray(
             gameState.board_array,
-            true
+            false
           );
           setOutputArray(outputArray);
         }
       }, [ws, gameId, username]);
-    const calculateOutputArray = (boardArray, playerColor) => {
-      if (ws){
-        if (playerColor === true) {
-          const array = new Array(64).fill(0);
-          for (let i = 0; i < boardArray.length; i++) {
-          array[i] = boardArray[i ^ 56];
-          }
-          return array;
-        } else {
-            return boardArray;
-        }
-      }else{
-        const array = new Array(64).fill(0);
-          for (let i = 0; i < boardArray.length; i++) {
+      const calculateOutputArray = (boardArray, playerColor) => {
+        if (ws){
+          if (playerColor === true) {
+            const array = new Array(64).fill(0);
+            for (let i = 0; i < boardArray.length; i++) {
             array[i] = boardArray[i ^ 56];
+            }
+            return array;
+          } else {
+            const array = new Array(64).fill(0);
+            for (let i = 0; i < boardArray.length; i++) {
+            array[i] = boardArray[i ^ 7];
+            }
+            return array;
           }
-          return array;
-      }
-
-    };
+        }else{
+          const array = new Array(64).fill(0);
+            for (let i = 0; i < boardArray.length; i++) {
+              array[i] = boardArray[i ^ 56];
+            }
+            return array;
+        }
+  
+      };
   if (!gameState.id && !ws) {
     return (
     <div className = "BoardWrapper">
@@ -503,7 +461,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
             key={index}
             piece={piece}
             dragPosition={dragPosition}
-            position={index^56}
+            position={index}
             legalMoves={legalMoves}
             onSelectSquare={onSelectSquare}
             onDragStart={onDragStart}
@@ -546,7 +504,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
           <ChessSquare
             key={index}
             piece={piece}
-            position={currentPlayerColor ? index^56: index}
+            position={currentPlayerColor === true ? index^56: index^7}
             legalMoves={legalMoves}
             dragPosition={dragPosition}
             onSelectSquare={onSelectSquare}
