@@ -212,11 +212,13 @@
 .closeModal {
   width: 97.81px;
   height: 100.9px;
-  position: relative;
-  top: -184px;
-  left: 246px;
+  position: absolute;
+  top: -33px;
+  right: 26px;
   gap: 0px;
   z-index: 11;
+  cursor: pointer;
+
 }
 .gameOverText{
   width: 276px;
@@ -232,7 +234,7 @@
   line-height: 57.84px;
   position: absolute;
   text-align: center;
-  left: 277px;
+  left: 239px;
   top: 11px;
 }
 .gameOverModal h2 {
@@ -241,7 +243,7 @@
   font-weight: 400;
   line-height: 48.2px;
   text-align: right;
-  bottom: 141px;
+  bottom: 143px;
   left: 220px;
   position: absolute;
 }
@@ -253,6 +255,8 @@
   gap: 0px;
   border-radius: 13px 0px 0px 0px;
   position: absolute;
+  cursor: pointer;
+
 }
 .rematch {
   width: 217px;
@@ -262,18 +266,60 @@
   gap: 0px;
   position: absolute;
   border-radius: 13px 0px 0px 0px;
+  cursor: pointer;
 }
 .grabbable {
   cursor: grab;
 }
 .lossimage {
-  left: 2px;
+
+  left: -27px;
   width: 256px;
   height: 260.8px;
+  position: absolute;
+  top: -25px;
+  gap: 0px;
+  z-index: 10;
+}
+.win {
+  left: 2px;
+  width: 200px;
+  height: 200px;
   position: relative;
   top: -24px;
   gap: 0px;
   z-index: 10;
+}
+.draw {
+  left: 11px;
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  top: 6px;
+  gap: 0px;
+  z-index: 10;
+}
+.rematchbutton-n {
+  width: 146px;
+  height: 81.34px;
+  bottom: 87px;
+  left: 331px;
+  gap: 0px;
+  border-radius: 13px 0px 0px 0px;
+  position: absolute;
+  cursor: pointer;
+
+}
+.rematchbutton-y {
+  width: 146px;
+  height: 81.34px;
+  bottom: 87px;
+  left: 148px;
+  gap: 0px;
+  border-radius: 13px 0px 0px 0px;
+  position: absolute;
+  cursor: pointer;
+
 }
 .grabbable:active, .dragging {
   cursor: grabbing !important;

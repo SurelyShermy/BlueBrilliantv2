@@ -48,17 +48,27 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
         player2_time: 0,
         });
     const [modalIsOpen, setModalIsOpen] = useState(false);
-
-    const handleRematch = () => {
+    const [rematchRequested, setRematchRequested] = useState(false);
+    const outgoingRematch = () => {
       const rematchRequest = {
         message_type: "rematch_request",
+        data: {
+          message_type: "rematch_request",
+        }
+      };
+      ws.send(JSON.stringify(rematchRequest));
+    };
+    const rematchConfirmed = () => {
+      const rematchRequest = {
+        message_type: "rematch_confirmed",
         data: {
           game_id: gameState.id,
         }
       };
       ws.send(JSON.stringify(rematchRequest));
+      setRematchRequested(false);
+      setModalIsOpen(false);
     };
-    
     const closeModal = () => {
         setModalIsOpen(false);
         ws.close();
@@ -306,13 +316,18 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
     //   }
     // };
     const sendTimeUpdateRequest = () => {
-        const timeUpdateRequest = {
+        console.log(modalIsOpen)
+        if (modalIsOpen === false){
+          const timeUpdateRequest = {
             message_type: "time_update",
             data: { gameId: gameId },
-        };
-        console.log(currentPlayerColor, gameState.turn)
-        if (currentPlayerColor === gameState.turn && !gameState.engine){
-            ws.send(JSON.stringify(timeUpdateRequest));
+          };
+          console.log(currentPlayerColor, gameState.turn)
+          if ((currentPlayerColor === gameState.turn) && !gameState.engine){
+              ws.send(JSON.stringify(timeUpdateRequest));
+          }
+        }else{
+          return;
         }
     };
     function formatTime(totalSeconds) {
@@ -323,7 +338,10 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
     const timeUpdateRequestRef = useRef(sendTimeUpdateRequest);
     
     useEffect(() => {
+      console.log(modalIsOpen, "in use effect")
+      if (modalIsOpen === false){
         timeUpdateRequestRef.current = sendTimeUpdateRequest;
+      }
     });
     useEffect(() => {
 
@@ -399,9 +417,11 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
               if (message.result.endsWith("wins")) {
                 let winner = message.result.split(" ")[0];
                 if (winner === username) {
+                  console.log("winner", winner, username)
                   setGameResult("win");
                 }else{
-                  setGameResult("lose");
+                  console.log("loser", winner, username)
+                  setGameResult("loss");
                 }
                 setModalIsOpen(true);
               }else if (message.result === "Stalemate") {
@@ -411,20 +431,23 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
                 let winner = message.result.split(" ")[0];
                 let loser = message.result.split(" ")[1];
                 if (winner === username) {
-                  setGameResult("win");
+                  setGameResult("win resign");
                 }else{
-                  setGameResult("lose");
+                  setGameResult("loss resign");
                 }
                 setModalIsOpen(true);
               }else if(message.result.endsWith("wins on time")){
                 let winner = message.result.split(" ")[0];
                 if (winner === username) {
-                  setGameResult("win");
+                  setGameResult("win time");
                 }else{
-                  setGameResult("lose");
+                  setGameResult("loss time");
                 }
                 setModalIsOpen(true);
               }
+            }
+            else if (message.message_type === "rematchRequest") {
+              setRematchRequested(true);
             }
           };
           
@@ -496,7 +519,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
     <ResignButton defaultImg="/images/base_resign.png" hoverImg="/images/hover_resign.png" onClick={null} altText="Resign"/>
     <ChatButton defaultImg="/images/chatbutton.png" hoverImg="/images/chatbutton.png" onClick={null} altText="Resign"/>
     <SearchButton defaultImg="/images/searchbutton.png" hoverImg="/images/searchbutton.png" onClick={null} altText="Resign"/>
-    <GameOverModal isOpen={modalIsOpen} result={null} rematch={handleRematch} newGame = {newGame} onClose={closeModal}/>
+    {/* <GameOverModal isOpen={true} result={"win"} rematchRequest={outgoingRematch} newGame = {newGame} onClose={closeModal} rematchRequested={rematchRequested}/> */}
       <div className = 'timer2'>
           10:00
         </div>
@@ -544,7 +567,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
         <ResignButton defaultImg="/images/base_resign.png" hoverImg="/images/hover_resign.png" onClick={resign} altText="Resign"/>
         <ChatButton defaultImg="/images/chatbutton.png" hoverImg="/images/chatbutton.png" onClick={null} altText="Resign"/>
         <SearchButton defaultImg="/images/searchbutton.png" hoverImg="/images/searchbutton.png" onClick={null} altText="Resign"/>
-        <GameOverModal isOpen={modalIsOpen} result={gameResult} rematch={handleRematch} newGame = {newGame} onClose={closeModal}/>
+        <GameOverModal isOpen={modalIsOpen} result={gameResult} rematchRequest={outgoingRematch} newGame = {newGame} onClose={closeModal} rematchRequested={rematchRequested} rematchConfirm={rematchConfirmed}/>
         <div className = 'timer2'>
           {username === gameState.player1_id ? formatTime(gameState.player2_time) : formatTime(gameState.player1_time)}
         </div>
