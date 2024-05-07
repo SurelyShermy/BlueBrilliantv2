@@ -144,6 +144,10 @@ const Background = ({children}) => {
 <svg width="1492" height="900" viewBox="0 0 1492 521" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width: '1492px',height: '635px',top: '3250px', left: '315px', zIndex: '1'}}>
 <rect width="1492" height="921" fill="#837DC3"/>
 </svg>
+{/* right cover */}
+<svg width="490" height="797" viewBox="0 0 490 797" fill="none" xmlns="http://www.w3.org/2000/svg" style={{top: '799px', left: '1294px', zIndex: '1'}}>
+<rect width="490" height="797" fill="#837DC3"/>
+</svg>
 
       <svg xmlns="http://www.w3.org/2000/svg" width="1602" height="3817" viewBox="0 0 1602 3817" fill="none"style={{top: '60px', left: '205px'}}>
         <path d="M1052 2212H1572V2783H1052V2212Z" fill="#4B458B"/>

@@ -48,6 +48,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
         player2_time: 0,
         });
     const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [engineThinking, setEngineThinking] = useState(false);
     const [rematchRequested, setRematchRequested] = useState(false);
     const outgoingRematch = () => {
       const rematchRequest = {
@@ -174,10 +175,10 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
         let playercolor = currentPlayerColor ? pieceBitRep.white : pieceBitRep.black;
         if (ws){
           if (isPieceSelected === true) {
-            if ((piece !== 0 && (pieceColor(piece) === playercolor)) || legalMoves.includes(position)) {
+            if (legalMoves.includes(position)) {
               console.log("making move")
               const moveMessage = {
-                message_type: "make_move",
+                message_type: "GameMove",
                 data: {
                   fromIndex: selectedSquare,
                   toIndex: position,
@@ -187,7 +188,19 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
               ws.send(JSON.stringify(moveMessage));
               setIsPieceSelected(false);
               setSelectedSquare(null);
-            } else {
+            }else if (piece !== 0 && (pieceColor(piece) === playercolor)) {
+              setSelectedSquare(position);
+              setIsPieceSelected(true);
+              const movesRequest = {
+                message_type: "moves_request",
+                data: {
+                    fromIndex: position,
+                    game_id: gameState.id,
+                }
+              };
+              ws.send(JSON.stringify(movesRequest));
+            }
+            else {
               setIsPieceSelected(false);
               setSelectedSquare(null);
             }
@@ -347,9 +360,11 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
                 player1_time: message.player1_time,
                 player2_time: message.player2_time,
               });
+              setEngineThinking(false);
               setCurrentPlayerColor(playerColor);
               setOutputArray(outputArray);
               if (message.engine === true && playerColor !== message.turn) {
+                setEngineThinking(true);
                 const moveMessage = {
                   message_type: "EngineMoveRequest",
                   data: {
@@ -469,7 +484,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
             dragPosition={dragPosition}
             position={index}
             legalMoves={legalMoves}
-            onSelectSquare={() => onSelectSquare(index)}
+            onSelectSquare={index}
             onDragStart={onDragStart}
             onDragOver={onDragOver}
             onDrop={onDrop}
@@ -479,7 +494,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
         ))}
 
     </div>
-    <EngineInteractive engine = {gameState.engine}/>
+    <EngineInteractive engine = {true} thinking = {true}/>
     <ResignButton defaultImg="/images/base_resign.png" hoverImg="/images/hover_resign.png" onClick={null} altText="Resign"/>
     <ChatButton defaultImg="/images/chatbutton.png" hoverImg="/images/chatbutton.png" onClick={null} altText="Resign"/>
     <SearchButton defaultImg="/images/searchbutton.png" hoverImg="/images/searchbutton.png" onClick={null} altText="Resign"/>
@@ -488,7 +503,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
           10:00
         </div>
       <div className = 'timer1'>  
-          10:00
+          10:00[]
       </div>
       <div className='player1_Stats'>
         <img src="images/defaultprofilepic.png" alt =""></img>
@@ -513,7 +528,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
             position={currentPlayerColor === true ? index^56: index^7}
             legalMoves={legalMoves}
             dragPosition={dragPosition}
-            onSelectSquare={() => onSelectSquare(index)}
+            onSelectSquare={onSelectSquare}
             onDragStart={onDragStart}
             onDragOver={onDragOver}
             onDrop={onDrop}
@@ -527,7 +542,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
           onSelect={handlePieceSelection}
         />
         </div>
-        <EngineInteractive engine = {gameState.engine}/>
+        <EngineInteractive engine = {gameState.engine} thinking = {engineThinking}/>
         <ResignButton defaultImg="/images/base_resign.png" hoverImg="/images/hover_resign.png" onClick={resign} altText="Resign"/>
         <ChatButton defaultImg="/images/chatbutton.png" hoverImg="/images/chatbutton.png" onClick={null} altText="Resign"/>
         <SearchButton defaultImg="/images/searchbutton.png" hoverImg="/images/searchbutton.png" onClick={null} altText="Resign"/>
