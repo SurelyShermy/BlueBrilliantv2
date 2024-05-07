@@ -1,3 +1,4 @@
 Django>=3.2,<4.0
 mysqlclient
 Pillow
+django-cors-headers
