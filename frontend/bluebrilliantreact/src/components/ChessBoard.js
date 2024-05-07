@@ -504,7 +504,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
           10:00
         </div>
       <div className = 'timer1'>  
-          10:00[]
+          10:00
       </div>
       <div className='player1_Stats'>
         <img src="images/defaultprofilepic.png" alt =""></img>
