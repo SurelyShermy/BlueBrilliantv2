@@ -1,5 +1,7 @@
 body{
-  transform: scale(.8);
+  transform: scale(1.15);
+  background-color: #373646;
+  transform-origin: top left;
 }
 .App {
   text-align: center;
