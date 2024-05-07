@@ -168,34 +168,43 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
     //FOR CLICKING ONLY
     const onSelectSquare = (position) => {
         const piece = gameState.board_array[position];
-        if (isPieceSelected) {
-          if ((piece !== 0 && (pieceColor(piece) === currentPlayerColor)) || legalMoves.includes(position)) {
-            const moveMessage = {
-              message_type: "make_move",
-              data: {
-                fromIndex: selectedSquare,
-                toIndex: position,
-                game_id: gameState.id,
-              }
-            };
-            ws.send(JSON.stringify(moveMessage));
-            setIsPieceSelected(false);
-            setSelectedSquare(null);
-          } else {
-            setIsPieceSelected(false);
-            setSelectedSquare(null);
-          }
-        } else if (piece !== 0 && pieceColor(piece) === currentPlayerColor) {
-          setSelectedSquare(position);
-          setIsPieceSelected(true);
-            const movesRequest = {
-                message_type: "moves_request",
+        console.log("selected square");
+        console.log(piece);
+        console.log(currentPlayerColor);
+        let playercolor = currentPlayerColor ? pieceBitRep.white : pieceBitRep.black;
+        if (ws){
+          if (isPieceSelected === true) {
+            if ((piece !== 0 && (pieceColor(piece) === playercolor)) || legalMoves.includes(position)) {
+              console.log("making move")
+              const moveMessage = {
+                message_type: "make_move",
                 data: {
-                    fromIndex: position,
-                    game_id: gameState.id,
+                  fromIndex: selectedSquare,
+                  toIndex: position,
+                  game_id: gameState.id,
                 }
-            };
-          ws.send(JSON.stringify(movesRequest));
+              };
+              ws.send(JSON.stringify(moveMessage));
+              setIsPieceSelected(false);
+              setSelectedSquare(null);
+            } else {
+              setIsPieceSelected(false);
+              setSelectedSquare(null);
+            }
+          } else if (piece !== 0 && (pieceColor(piece) === playercolor)) {
+            setSelectedSquare(position);
+            setIsPieceSelected(true);
+            console.log("requesting moves")
+
+              const movesRequest = {
+                  message_type: "moves_request",
+                  data: {
+                      fromIndex: position,
+                      game_id: gameState.id,
+                  }
+              };
+            ws.send(JSON.stringify(movesRequest));
+          }
         }
     };
     const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 }); // Position of the piece being dragged
@@ -270,13 +279,11 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
     };
 
     const sendTimeUpdateRequest = () => {
-        console.log(modalIsOpen)
         if (modalIsOpen === false){
           const timeUpdateRequest = {
             message_type: "time_update",
             data: { gameId: gameId },
           };
-          console.log(currentPlayerColor, gameState.turn)
           if ((currentPlayerColor === gameState.turn) && !gameState.engine){
               ws.send(JSON.stringify(timeUpdateRequest));
           }
@@ -292,7 +299,6 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
     const timeUpdateRequestRef = useRef(sendTimeUpdateRequest);
     
     useEffect(() => {
-      console.log(modalIsOpen, "in use effect")
       if (modalIsOpen === false || !gameState.engine){
         timeUpdateRequestRef.current = sendTimeUpdateRequest;
       }
@@ -463,7 +469,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
             dragPosition={dragPosition}
             position={index}
             legalMoves={legalMoves}
-            onSelectSquare={onSelectSquare}
+            onSelectSquare={() => onSelectSquare(index)}
             onDragStart={onDragStart}
             onDragOver={onDragOver}
             onDrop={onDrop}
@@ -507,7 +513,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
             position={currentPlayerColor === true ? index^56: index^7}
             legalMoves={legalMoves}
             dragPosition={dragPosition}
-            onSelectSquare={onSelectSquare}
+            onSelectSquare={() => onSelectSquare(index)}
             onDragStart={onDragStart}
             onDragOver={onDragOver}
             onDrop={onDrop}
