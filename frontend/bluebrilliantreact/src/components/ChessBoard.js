@@ -188,6 +188,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
               ws.send(JSON.stringify(moveMessage));
               setIsPieceSelected(false);
               setSelectedSquare(null);
+              setLegalMoves([]);
             }else if (piece !== 0 && (pieceColor(piece) === playercolor)) {
               setSelectedSquare(position);
               setIsPieceSelected(true);
@@ -494,7 +495,7 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
         ))}
 
     </div>
-    <EngineInteractive engine = {true} thinking = {true}/>
+    <EngineInteractive engine = {false} thinking = {false}/>
     <ResignButton defaultImg="/images/base_resign.png" hoverImg="/images/hover_resign.png" onClick={null} altText="Resign"/>
     <ChatButton defaultImg="/images/chatbutton.png" hoverImg="/images/chatbutton.png" onClick={null} altText="Resign"/>
     <SearchButton defaultImg="/images/searchbutton.png" hoverImg="/images/searchbutton.png" onClick={null} altText="Resign"/>
