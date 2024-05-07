@@ -268,7 +268,7 @@ function App() {
     });
   };
   const createWS = (gameId) => {
-    const newWs = new WebSocket(`ws://bluebrilliant.me:4000/${gameId}`);
+    const newWs = new WebSocket(`ws://bluebrilliant.me:4000/ws/${gameId}`);
     setIsConnecting(true);
     newWs.onopen = () => {
       setIsConnecting(false);
