@@ -2,7 +2,7 @@
   text-align: center;
   background-color: #373646;
 }
-
+@import url('https://fonts.googleapis.com/css2?family=Russo+One&display=swap');
 
 .ChessBoard {
   position: relative;
@@ -73,13 +73,7 @@
   justify-content: center;
   align-items: center;
 }
-.resign{
-  position: absolute;
-  top: 800px;
-  right: 50px;
-  width: 100px;
-  height: 100px;
-}
+
 .cell::after {
   content: attr(data-notation);
   position: absolute;
@@ -105,9 +99,228 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+.resignButton{
+  position: absolute;
+  width: 176.99px;
+  height: 155.28px;
+  top: 1635px;
+  left: 1494px;
+  gap: 0px;
+  z-index: 2;
+}
+.chatButton{
+  width: 220.22px;
+  height: 171.89px;
+  top: 1719.75px;
+  left: 1433.93px;
+  gap: 0px;
+  position: absolute;
+  z-index: 2;
+}
+.searchButton{
+  width: 189.22px;
+  height: 135.71px;
+  top: 1763.18px;
+  left: 1325px;
+  gap: 0px;
+  position: absolute;
+  z-index: 2;
+}
+.alexNameplate{
+  width: 233.6px;
+  height: 443px;
+  top: 3392px;
+  left: 421px;
+  gap: 0px;
+  border-radius: 22px 0px 0px 0px;
 
+  position: absolute;
+  z-index: 2;
+
+}
+.alexGithub{
+  width: 49px;
+  height: 49px;
+  top: 3677px;
+  left: 357px;
+  gap: 0px;
+  position: absolute;
+  z-index: 2;
+}
+.alexLinkedin{
+  width: 49px;
+  height: 49px;
+  top: 3733px;
+  left: 357px;
+  position: absolute;
+  z-index: 2;
+}
+.masonNameplate{
+  width: 233.6px;
+  height: 443px;
+  top: 3392px;
+  left: 790.47px;
+  gap: 0px;
+  position: absolute;
+  z-index: 2;
+}
+.masonLinkedin{
+  width: 49px;
+  height: 49px;
+  top: 3733px;
+  left: 731px;
+  position: absolute;
+  z-index: 2;
+}
+.masonGithub{
+  width: 49px;
+  height: 49px;
+  top: 3677px;
+  left: 731px;
+  position: absolute;
+  z-index: 2;
+}
+.dylanNameplate{
+  width: 293px;
+  height: 443px;
+  top: 3392px;
+  left: 1102px;
+  gap: 0px;
+  position: absolute;
+  z-index: 2;
+}
+.gameOverModal {
+  width: 624.81px;
+  height: 371px;
+  top: 995px;
+  left: 636px;
+  position: absolute;
+  gap: 0px;
+  z-index: 10;
+}
+.modalBackground {
+  width: 570px;
+  height: 324px;
+  top: 0px;
+  left: 0px;
+  gap: 0px;
+  z-index: -1;
+  position: absolute;
+  border-radius: 31px 0px 0px 0px;
+
+}
+
+.closeModal {
+  width: 97.81px;
+  height: 100.9px;
+  position: absolute;
+  top: -33px;
+  right: 26px;
+  gap: 0px;
+  z-index: 11;
+  cursor: pointer;
+
+}
+.gameOverText{
+  width: 276px;
+  height: 107px;
+  top: 1068px;
+  left: 889px;
+  gap: 0px;
+}
+.gameOverModal h1 {
+  font-family: Russo One;
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 57.84px;
+  position: absolute;
+  text-align: center;
+  left: 239px;
+  top: 11px;
+}
+.gameOverModal h2 {
+  font-family: Russo One;
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 48.2px;
+  text-align: right;
+  bottom: 143px;
+  left: 220px;
+  position: absolute;
+}
+.playagain {
+  width: 217px;
+  height: 78px;
+  bottom: 76px;
+  left: 67px;
+  gap: 0px;
+  border-radius: 13px 0px 0px 0px;
+  position: absolute;
+  cursor: pointer;
+
+}
+.rematch {
+  width: 217px;
+  height: 82px;
+  bottom: 74px;
+  right: 85px;
+  gap: 0px;
+  position: absolute;
+  border-radius: 13px 0px 0px 0px;
+  cursor: pointer;
+}
 .grabbable {
   cursor: grab;
+}
+.lossimage {
+
+  left: -27px;
+  width: 256px;
+  height: 260.8px;
+  position: absolute;
+  top: -25px;
+  gap: 0px;
+  z-index: 10;
+}
+.win {
+  left: 2px;
+  width: 200px;
+  height: 200px;
+  position: relative;
+  top: -24px;
+  gap: 0px;
+  z-index: 10;
+}
+.draw {
+  left: 11px;
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  top: 6px;
+  gap: 0px;
+  z-index: 10;
+}
+.rematchbutton-n {
+  width: 146px;
+  height: 81.34px;
+  bottom: 87px;
+  left: 331px;
+  gap: 0px;
+  border-radius: 13px 0px 0px 0px;
+  position: absolute;
+  cursor: pointer;
+
+}
+.rematchbutton-y {
+  width: 146px;
+  height: 81.34px;
+  bottom: 87px;
+  left: 148px;
+  gap: 0px;
+  border-radius: 13px 0px 0px 0px;
+  position: absolute;
+  cursor: pointer;
+
 }
 .grabbable:active, .dragging {
   cursor: grabbing !important;
@@ -163,16 +376,14 @@
   height: 200px;
   clip-path: polygon(3% 23%, 26% 100%, 74% 100%, 84% 87%, 92% 26%, 73% 0, 25% 24%);
 }
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.promotion_modal {
+  width: 397px;
+  height: 197px;
+  top: 300px;
+  left: 175px;
+  gap: 0px;
+  position: absolute;
+  z-index: 10;
 }
 .engineInteractive{
   position: absolute;

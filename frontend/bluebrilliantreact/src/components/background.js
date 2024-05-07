@@ -133,6 +133,17 @@ const Background = ({children}) => {
         <path d="M0.5 484V0H1086.5V97.5H1719V772H1629L1628.5 3856.5H89V3278.5H178V2122.5H995.5V1833.5L182 1833L181.5 484H0.5Z" fill="#837DC3"/>
         <path d="M1177 3567L1176.5 3278.5H1447V3567H1177Z" fill="#837DC3"/>
       </svg>
+{/* Right coverup rectangle */}
+      <svg width="490" height="511" viewBox="0 0 490 511" fill="none" xmlns="http://www.w3.org/2000/svg"style={{top: '1625px', left: '1303px', zIndex: '1'}}>
+      <rect width="490" height="511" fill="#837DC3"/>
+      </svg>
+{/* middle cover */}
+<svg width="1419" height="1023" viewBox="0 0 1419 1023" fill="none" xmlns="http://www.w3.org/2000/svg"style={{top: '2234px', left: '380px', zIndex: '1'}}>
+<rect x="0.5" y="0.5" width="1418" height="1022" rx="99.5" fill="#837DC3" stroke="#433E7B"/>
+</svg>
+<svg width="1492" height="900" viewBox="0 0 1492 521" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width: '1492px',height: '635px',top: '3250px', left: '315px', zIndex: '1'}}>
+<rect width="1492" height="921" fill="#837DC3"/>
+</svg>
 
       <svg xmlns="http://www.w3.org/2000/svg" width="1602" height="3817" viewBox="0 0 1602 3817" fill="none"style={{top: '60px', left: '205px'}}>
         <path d="M1052 2212H1572V2783H1052V2212Z" fill="#4B458B"/>
