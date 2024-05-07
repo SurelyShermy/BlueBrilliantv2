@@ -325,6 +325,34 @@
 .grabbable:active, .dragging {
   cursor: grabbing !important;
 }
+.liamGithub{
+  width: 49px;
+  height: 49px;
+  top: 3677px;
+  left: 1472px;
+  gap: 0px;
+  position: absolute;
+  z-index: 2;
+}
+.liamLinkedin{
+  width: 49px;
+  height: 49px;
+  top: 3733px;
+  left: 1472px;
+  gap: 0px;
+  position: absolute;
+  z-index: 2;
+}
+.liamNameplate{
+  width: 234px;
+  height: 443px;
+  top: 3392px;
+  left: 1531px;
+  gap: 0px;
+  border-radius: 22px 0px 0px 0px;
+  position: absolute;
+  z-index: 2;
+}
 .dragging {
   opacity: 1 !important;  
   position: fixed !important;

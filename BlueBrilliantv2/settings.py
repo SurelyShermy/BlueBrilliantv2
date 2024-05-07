@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-wqk!6)kvp=cwrk!s5fwebe6*drvlmh$t#qfn*k@g@=a3awwr6(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['159.203.107.176', 'localhost', '127.0.0.1', 'bluebrilliant.me']
+ALLOWED_HOSTS = ['159.203.107.176', 'localhost', '127.0.0.1', 'bluebrilliant.me', "www.bluebrilliant.me", "http://bluebrilliant.me", "http://www.bluebrilliant.me"]
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'frontend',
 
 ]
@@ -47,9 +48,13 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+CORS_ORIGIN_WHITELIST = [
+    'http://bluebrilliant.me',
 ]
 ROOT_URLCONF = 'BlueBrilliantv2.urls'
 
