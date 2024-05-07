@@ -491,12 +491,12 @@ const ChessBoard = ({ ws, username, gameId, newGame = null}) => {
           10:00
       </div>
       <div className='player1_Stats'>
-        <img src="defaultprofilepic.png" alt =""></img>
+        <img src="images/defaultprofilepic.png" alt =""></img>
 
         <span>{username ? username : "Player 1"}</span>
       </div>
       <div className='player2_Stats'>
-        <img src="defaultprofilepic.png" alt =""></img>
+        <img src="images/defaultprofilepic.png" alt =""></img>
 
         <span>{gameState.player2_id ? gameState.player2_id : "Player 2"}</span>
       </div>

@@ -224,7 +224,7 @@ function App() {
   
   const startPvEGame = (userId) => {
     console.log('Starting new PvE game for user:', userId)
-    fetch(`http://localhost:4000/engine_game/${userId}`, {
+    fetch(`http://bluebrilliant.me:4000/engine_game/${userId}`, {
       method: 'POST',
     })
     .then(response => response.json())
@@ -250,7 +250,7 @@ function App() {
   };
 
   const startPvPMatchmaking = (userId) => {
-    fetch(`http://localhost:4000/matchmaking/${userId}`, {
+    fetch(`http://bluebrilliant.me:4000/matchmaking/${userId}`, {
       method: 'POST',
     })
     .then(response => response.json())
@@ -268,7 +268,7 @@ function App() {
     });
   };
   const createWS = (gameId) => {
-    const newWs = new WebSocket(`ws://localhost:4000/ws/${gameId}`);
+    const newWs = new WebSocket(`ws://bluebrilliant.me:4000/${gameId}`);
     setIsConnecting(true);
     newWs.onopen = () => {
       setIsConnecting(false);
@@ -306,13 +306,13 @@ function App() {
           <div key={user.isAuthenticated}>
             {user.isAuthenticated ? (
               <>
-                <img src={user.profilePicUrl || './defaultprofilepic.png'} alt="Profile" style={{ width: 100, height: 100, borderRadius: '50%' }} />
+                <img src={user.profilePicUrl || 'images/defaultprofilepic.png'} alt="Profile" style={{ width: 100, height: 100, borderRadius: '50%' }} />
                 <p>Welcome, {user.username}!</p>
-                <input type="file" onChange={handleProfilePicChange} />
+                {/* <input type="file" onChange={handleProfilePicChange} /> */}
                 <button onClick={handleLogout}>Logout</button>
-                <button onClick={handlePvEGameStart} disabled={isConnecting || matching}>
+                {/* <button onClick={handlePvEGameStart} disabled={isConnecting || matching}>
                   {isConnecting ? 'Connecting...' : 'Play the Engine'}
-                </button>
+                </button> */}
                 {/* <button onClick={handlePvPGameStart} disabled={matching || isConnecting}>Play vs Player</button> */}
               </>
             ) : (
@@ -341,6 +341,9 @@ function App() {
         <img src="images/masongit.png" alt="mason" className="masonGithub" />
         <img src="images/masonlinkedin.png" alt="Alex" className="masonLinkedin" />
         <img src="images/dylan.png" alt="dylan" className="dylanNameplate" />
+        <img src="images/liam.png" alt="liam" className="liamNameplate" />
+        <a href= "https://github.com/lgrichar"><img src="images/liamgit.png" alt="liam" className="liamGithub" /></a>
+        <a href= "https://www.linkedin.com/in/liamr2/"><img src="images/liamlinkedin.png" alt="liam" className="liamLinkedin" /></a>
         </Background>
 
     </div>
